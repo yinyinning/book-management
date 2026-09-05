@@ -8,4 +8,8 @@ public class BookManagementApplication {
     public static void main(String[] args) {
         SpringApplication.run(BookManagementApplication.class,args);
     }
+    @GetMapping("/api/ping")
+    public Result<String> ping(){
+        return Result.success("pong");
+    }
 }
