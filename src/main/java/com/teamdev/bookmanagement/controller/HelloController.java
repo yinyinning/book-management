@@ -10,4 +10,9 @@ public class HelloController {
     public Result<String> hello(){
         return Result.success("hello,world");
     }
+
+    @GetMapping("/api/ping")
+    public Result<String> ping(){
+        return Result.success("pong");
+    }
 }
