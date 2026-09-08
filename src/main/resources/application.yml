@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # allowPublicKeyRetrieval=true 是 MySQL 8 用 caching_sha2_password 时必需的
+    url: jdbc:mysql://localhost:3306/book_management?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    # 密码里含 # 所以要加引号
+    password: "Ztl20070522#"
+
+mybatis-plus:
+  configuration:
+    # 数据库下划线字段自动映射为驼峰(create_time -> createTime),MyBatis-Plus 默认已开,这里显式写出便于理解
+    map-underscore-to-camel-case: true
+    # 控制台打印 SQL,学习期强烈建议开着,能看清每句 SQL 和参数
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      # 主键自增,对应数据库 AUTO_INCREMENT
+      id-type: auto
