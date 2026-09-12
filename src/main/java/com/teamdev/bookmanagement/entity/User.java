@@ -3,6 +3,7 @@ package com.teamdev.bookmanagement.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
  * 用户实体,对应数据库表 user
  */
 @Data
+@Builder
 @TableName("user")
 public class User {
 
