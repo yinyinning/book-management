@@ -4,8 +4,8 @@ spring:
     # allowPublicKeyRetrieval=true 是 MySQL 8 用 caching_sha2_password 时必需的
     url: jdbc:mysql://localhost:3306/book_management?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
-    # 密码里含 # 所以要加引号
-    password: ${DATABASE_PASSWORD}
+    # 密码从环境变量 DB_PASSWORD 读取，不写死在仓库里
+    password: ${DB_PASSWORD}
 
 mybatis-plus:
   configuration:
