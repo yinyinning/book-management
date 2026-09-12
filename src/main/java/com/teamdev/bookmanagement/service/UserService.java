@@ -1,6 +1,8 @@
 package com.teamdev.bookmanagement.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.teamdev.bookmanagement.dto.LoginRequest;
+import com.teamdev.bookmanagement.dto.LoginResponse;
 import com.teamdev.bookmanagement.dto.RegisterRequest;
 import com.teamdev.bookmanagement.entity.User;
 
@@ -10,4 +12,6 @@ import com.teamdev.bookmanagement.entity.User;
  */
 public interface UserService extends IService<User> {
     void register(RegisterRequest registerRequest);
+    LoginResponse login(LoginRequest loginRequest);
+    Boolean updateUser(User user);
 }
