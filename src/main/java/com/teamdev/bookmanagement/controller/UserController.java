@@ -1,6 +1,8 @@
 package com.teamdev.bookmanagement.controller;
 
 import com.teamdev.bookmanagement.common.Result;
+import com.teamdev.bookmanagement.dto.LoginRequest;
+import com.teamdev.bookmanagement.dto.LoginResponse;
 import com.teamdev.bookmanagement.dto.RegisterRequest;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.service.UserService;
@@ -37,7 +39,7 @@ public class UserController {
     /** 修改用户:PUT /api/user,body 传 JSON(必须带 id) */
     @PutMapping
     public Result<Boolean> update(@RequestBody User user) {
-        return Result.success(userService.updateById(user));
+        return Result.success(userService.updateUser(user));
     }
 
     /** 删除用户:DELETE /api/user/{id} */
@@ -50,5 +52,10 @@ public class UserController {
     public Result<Void> register(@RequestBody RegisterRequest registerRequest){
         userService.register(registerRequest);
         return Result.success();
+    }
+
+    @PostMapping("/login")
+    public Result<LoginResponse> login(@RequestBody LoginRequest loginRequest){
+        return Result.success(userService.login(loginRequest));
     }
 }
