@@ -5,7 +5,7 @@ spring:
     url: jdbc:mysql://localhost:3306/book_management?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
     username: root
     # 密码里含 # 所以要加引号
-    password: Root@123456
+    password: ${DATABASE_PASSWORD}
 
 mybatis-plus:
   configuration:

@@ -1,6 +1,7 @@
 package com.teamdev.bookmanagement.controller;
 
 import com.teamdev.bookmanagement.common.Result;
+import com.teamdev.bookmanagement.dto.RegisterRequest;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -33,12 +34,6 @@ public class UserController {
         return Result.success(userService.list());
     }
 
-    /** 新增用户:POST /api/user,body 传 JSON */
-    @PostMapping
-    public Result<Boolean> add(@RequestBody User user) {
-        return Result.success(userService.save(user));
-    }
-
     /** 修改用户:PUT /api/user,body 传 JSON(必须带 id) */
     @PutMapping
     public Result<Boolean> update(@RequestBody User user) {
@@ -49,5 +44,11 @@ public class UserController {
     @DeleteMapping("/{id}")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(userService.removeById(id));
+    }
+
+    @PostMapping("/register")
+    public Result<Void> register(@RequestBody RegisterRequest registerRequest){
+        userService.register(registerRequest);
+        return Result.success();
     }
 }

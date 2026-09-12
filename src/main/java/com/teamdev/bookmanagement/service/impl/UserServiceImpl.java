@@ -1,9 +1,12 @@
 package com.teamdev.bookmanagement.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.teamdev.bookmanagement.common.BusinessException;
+import com.teamdev.bookmanagement.dto.RegisterRequest;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import com.teamdev.bookmanagement.service.UserService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,4 +16,16 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    private final BCryptPasswordEncoder passwordEncoder;
+    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder){
+        passwordEncoder=bCryptPasswordEncoder;
+    }
+    @Override
+    public void register(RegisterRequest registerRequest) {
+        if (lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
+            throw new BusinessException(400,"用户名已存在");
+        }
+        User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(0).status(1).build();
+        save(user);
+    }
 }
