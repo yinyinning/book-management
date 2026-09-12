@@ -36,7 +36,7 @@ public class UserController {
         return Result.success(userService.list());
     }
 
-    /** 修改用户:PUT /api/user,body 传 JSON(必须带 id) */
+    /** 修改用户:PUT /api/user,body 传 JSON(必须带 id) 注意请求体传role/status有越权风险，需补充token鉴权处理*/
     @PutMapping
     public Result<Boolean> update(@RequestBody User user) {
         return Result.success(userService.updateUser(user));

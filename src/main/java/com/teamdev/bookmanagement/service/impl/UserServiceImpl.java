@@ -38,10 +38,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user==null) {
             throw new BusinessException(400, "用户名或密码错误");
         }
-        if (user.getStatus()==0){
+        if (user.getStatus()!=null&&user.getStatus()==0){
             throw new BusinessException(403,"账号已禁用");
         }
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
+        if (loginRequest.getPassword()==null||loginRequest.getPassword().isBlank()||!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
             throw new BusinessException(400,"用户名或密码错误");
         }
         StpUtil.login(user.getId());
@@ -50,6 +50,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUser(User user) {
+        if (user.getUsername()!=null&&!user.getUsername().isBlank()&&lambdaQuery().eq(User::getUsername,user.getUsername()).ne(User::getId,user.getId()).exists()){
+            throw new BusinessException(400,"用户已存在");
+        }
         if (user.getPassword()!=null&&!user.getPassword().isBlank()){
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
