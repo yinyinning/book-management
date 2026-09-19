@@ -1,4 +1,4 @@
-package com.teamdev.bookmanagement.dto;
+package com.teamdev.bookmanagement.dto.response;
 
 import lombok.Builder;
 import lombok.Data;
