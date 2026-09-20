@@ -1,13 +1,10 @@
 package com.teamdev.bookmanagement.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
-import com.teamdev.bookmanagement.dto.request.LoginRequest;
-import com.teamdev.bookmanagement.dto.request.RegisterRequest;
-import com.teamdev.bookmanagement.dto.request.UpdateUserNameRequest;
-import com.teamdev.bookmanagement.dto.request.UpdateUserPasswordRequest;
+import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
-import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -28,16 +25,32 @@ public class UserController {
         this.userService = userService;
     }
 
-    /** 按 id 查询单个用户:GET /api/user/1 */
+    /** 管理员按 id 查询单个用户:GET /api/user/1 */
     @GetMapping("/{id}")
+    @SaCheckRole("admin")
     public Result<UserResponse> getById(@PathVariable Long id) {
         return Result.success(userService.getById(id));
     }
 
-    /** 查询所有用户:GET /api/user/list */
+    /** 管理员查询所有用户:GET /api/user/list */
     @GetMapping("/list")
+    @SaCheckRole("admin")
     public Result<List<UserResponse>> list() {
         return Result.success(userService.listUsers());
+    }
+
+    /** 管理员禁用/启用用户:PUT /api/user/{id}/status */
+    @PutMapping("/{id}/status")
+    @SaCheckRole("admin")
+    public Result<Boolean> updateUserStatus(@PathVariable Long id, @RequestBody @Valid UpdateUserStatusRequest updateUserStatusRequest){
+        return Result.success(userService.updateUserStatus(id,updateUserStatusRequest));
+    }
+
+    /** 管理员删除用户:DELETE /api/user/{id} */
+    @DeleteMapping("/{id}")
+    @SaCheckRole("admin")
+    public Result<Boolean> delete(@PathVariable Long id) {
+        return Result.success(userService.removeById(id));
     }
 
     /** 修改用户名:PUT /api/user/name,body 传 JSON(必须带 id)(不须带id) 注意请求体传role/status有越权风险，需补充token鉴权处理*/
@@ -51,11 +64,6 @@ public class UserController {
     @PutMapping("password")
     public Result<Boolean> updatePassword(@RequestBody @Valid UpdateUserPasswordRequest updateUserPasswordRequest){
         return Result.success(userService.updateUserPassword(updateUserPasswordRequest));
-    }
-    /** 删除用户:DELETE /api/user/{id} */
-    @DeleteMapping("/{id}")
-    public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(userService.removeById(id));
     }
 
     @PostMapping("/register")

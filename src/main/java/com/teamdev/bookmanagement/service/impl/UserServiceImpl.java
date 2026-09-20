@@ -4,10 +4,7 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
-import com.teamdev.bookmanagement.dto.request.LoginRequest;
-import com.teamdev.bookmanagement.dto.request.RegisterRequest;
-import com.teamdev.bookmanagement.dto.request.UpdateUserNameRequest;
-import com.teamdev.bookmanagement.dto.request.UpdateUserPasswordRequest;
+import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
 import com.teamdev.bookmanagement.entity.User;
@@ -97,5 +94,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private UserResponse toResponse(User user){
         return UserResponse.builder().id(user.getId()).username(user.getUsername()).status(user.getStatus()).role(user.getRole()).createTime(user.getCreateTime()).updateTime(user.getUpdateTime()).build();
+    }
+
+    @Override
+    public Boolean updateUserStatus(Long id, UpdateUserStatusRequest updateUserStatusRequest){
+        if (updateUserStatusRequest.getStatus()==null || updateUserStatusRequest.getStatus()!=0&&updateUserStatusRequest.getStatus()!=1){
+            throw new BusinessException(400,"更新用户状态传入参数非法");
+        }
+        User user=lambdaQuery().eq(User::getId,id).one();
+        if (user==null){
+            throw new BusinessException(404,"用户不存在");
+        }
+        if (id==StpUtil.getLoginIdAsLong()){
+            throw new BusinessException(400,"管理员不能操作自己");
+        }
+        return update(new LambdaUpdateWrapper<User>().set(User::getStatus,updateUserStatusRequest.getStatus()).eq(User::getId,id));
     }
 }
