@@ -1,0 +1,80 @@
+CREATE DATABASE IF NOT EXISTS book_management DEFAULT CHARACTER SET utf8mb4;
+USE book_management;
+
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+`username` VARCHAR(50) NOT NULL COMMENT '用户名',
+`password` VARCHAR(100) NOT NULL COMMENT '密码（加密存储）',
+`role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0=普通用户，1=管理员',
+`status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1=正常，0=禁用',
+`create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+`update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+UNIQUE KEY `uk_username` (`username`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '用户表';
+
+DROP TABLE IF EXISTS `book`;
+CREATE TABLE `book` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '图书ID',
+`isbn` VARCHAR(20) NOT NULL COMMENT 'ISBN号',
+`title` VARCHAR(100) NOT NULL COMMENT '书名',
+`author` VARCHAR(50) DEFAULT NULL COMMENT '作者',
+`publisher` VARCHAR(100) DEFAULT NULL COMMENT '出版社',
+`create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+`update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (`id`),
+UNIQUE KEY `uk_isbn` (`isbn`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书表';
+
+DROP TABLE IF EXISTS `borrow_record`;
+CREATE TABLE `borrow_record` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '记录ID',
+`user_id` BIGINT NOT NULL COMMENT '用户ID',
+`book_copy_id` BIGINT NOT NULL COMMENT '副本ID',
+`borrow_time` DATETIME NOT NULL COMMENT '借出时间',
+`due_time` DATETIME NOT NULL COMMENT '应还时间',
+`return_time` DATETIME DEFAULT NULL COMMENT '实际归还时间',
+`status` TINYINT NOT NULL DEFAULT 0 COMMENT '0=借出中，1=已归还，2=逾期',
+PRIMARY KEY (`id`),
+KEY `idx_user_id` (`user_id`),
+KEY `idx_book_copy_id` (`book_copy_id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='借阅记录表';
+
+DROP TABLE IF EXISTS `book_type`;
+CREATE TABLE `book_type` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '类型ID',
+`name` VARCHAR(100) NOT NULL COMMENT '类型名',
+PRIMARY KEY (`id`),
+UNIQUE KEY uk_name (`name`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书类型表';
+
+DROP TABLE IF EXISTS `book_type_rel`;
+CREATE TABLE `book_type_rel` (
+`book_id` BIGINT NOT NULL COMMENT '图书ID',
+`type_id` BIGINT NOT NULL COMMENT '类型ID',
+PRIMARY KEY (`book_id`,`type_id`),
+KEY `idx_type_id` (`type_id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='类型关联表';
+
+DROP TABLE IF EXISTS `book_copy`;
+CREATE TABLE `book_copy` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '副本ID',
+`book_id` BIGINT NOT NULL COMMENT '图书ID',
+`barcode` VARCHAR(100) NOT NULL COMMENT '条码/馆藏编码',
+`status` TINYINT NOT NULL DEFAULT 0 COMMENT '图书副本状态：0=在馆，1=借出，2=损坏',
+PRIMARY KEY (`id`),
+UNIQUE KEY uk_barcode (`barcode`),
+KEY idx_book_id (`book_id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图书副本表';
+
+DROP TABLE IF EXISTS `announcement`;
+CREATE TABLE `announcement` (
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '通告ID',
+`title` VARCHAR(100) NOT NULL COMMENT '标题',
+`content` TEXT NOT NULL COMMENT '内容',
+`publisher_id` BIGINT NOT NULL COMMENT '发布人ID',
+`publish_time` DATETIME NOT NULL COMMENT '发布时间',
+PRIMARY KEY (`id`),
+KEY idx_publisher_id (`publisher_id`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通告表';
