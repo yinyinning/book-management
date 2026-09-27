@@ -1,4 +1,4 @@
-package com.teamdev.bookmanagement.dto;
+package com.teamdev.bookmanagement.dto.request;
 
 import lombok.Data;
 

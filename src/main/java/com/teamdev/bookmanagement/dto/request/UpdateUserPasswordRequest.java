@@ -1,6 +1,8 @@
 package com.teamdev.bookmanagement.dto.request;
 
+import com.teamdev.bookmanagement.common.validator.ValidPassword;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
@@ -11,5 +13,7 @@ public class UpdateUserPasswordRequest {
     private String oldPassword;
     @NotBlank(message = "密码不能为空")
     @Size(min = 6,max = 20,message = "密码只能6-20个字符")
+    @ValidPassword
+    @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*]+$",message = "密码只能包含字母、数字和!@#$%^&*")
     private String newPassword;
 }

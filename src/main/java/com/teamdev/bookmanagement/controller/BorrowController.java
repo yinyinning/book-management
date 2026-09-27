@@ -1,7 +1,7 @@
 package com.teamdev.bookmanagement.controller;
 
 import com.teamdev.bookmanagement.common.Result;
-import com.teamdev.bookmanagement.dto.BorrowRequest;
+import com.teamdev.bookmanagement.dto.request.BorrowRequest;
 import com.teamdev.bookmanagement.service.BorrowRecordService;
 import org.springframework.web.bind.annotation.*;
 
