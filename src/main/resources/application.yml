@@ -11,7 +11,7 @@ spring:
     redis:
       host: localhost
       port: 6379
-      password: myRedis123
+      password: ${RDB_PASSWORD}
 
 mybatis-plus:
   configuration:
