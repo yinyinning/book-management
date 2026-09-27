@@ -1,6 +1,8 @@
 package com.teamdev.bookmanagement.controller;
 
+import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
@@ -56,24 +58,39 @@ public class UserController {
     /** 修改用户名:PUT /api/user/name,body 传 JSON(必须带 id)(不须带id) 注意请求体传role/status有越权风险，需补充token鉴权处理*/
     //已完成
     @PutMapping("/name")
+    @SaCheckLogin
     public Result<Boolean> updateName(@RequestBody @Valid UpdateUserNameRequest updateUserNameRequest) {
         return Result.success(userService.updateUserName(updateUserNameRequest));
     }
 
-    /** 修改密码:PUT /api/user/password*/
+    /** 修改密码:PUT /api/user/password*///会登出，需要重新登录
     @PutMapping("password")
+    @SaCheckLogin
     public Result<Boolean> updatePassword(@RequestBody @Valid UpdateUserPasswordRequest updateUserPasswordRequest){
-        return Result.success(userService.updateUserPassword(updateUserPasswordRequest));
+        Boolean result=userService.updateUserPassword(updateUserPasswordRequest);
+        if (result){
+            StpUtil.logout(StpUtil.getLoginIdAsLong());
+        }
+        return Result.success(result);
     }
 
+    /** 注册普通用户:POST /api/user/register*/
     @PostMapping("/register")
     public Result<Void> register(@RequestBody @Valid RegisterRequest registerRequest){
         userService.register(registerRequest);
         return Result.success();
     }
 
+    /** 登录:POST /api/user/login*/
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest){
         return Result.success(userService.login(loginRequest));
+    }
+
+    /** 用户退出登录:POST /api/user/logout*/
+    @PutMapping("/logout")
+    public Result<Void> logout(){
+        StpUtil.logout();
+        return Result.success();
     }
 }

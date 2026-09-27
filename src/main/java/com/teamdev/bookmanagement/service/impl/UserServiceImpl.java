@@ -10,9 +10,11 @@ import com.teamdev.bookmanagement.dto.response.UserResponse;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import com.teamdev.bookmanagement.service.UserService;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 用户业务实现。
@@ -22,8 +24,12 @@ import java.util.List;
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
-    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder){
+    private final StringRedisTemplate stringRedisTemplate;
+    private static final int MAX_FAIL_COUNT=5;
+    private static final int LOCK_MINUTES=5;
+    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder, StringRedisTemplate stringRedisTemplate){
         passwordEncoder=bCryptPasswordEncoder;
+        this.stringRedisTemplate=stringRedisTemplate;
     }
     @Override
     public void register(RegisterRequest registerRequest) {
@@ -43,10 +49,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user.getStatus()!=null&&user.getStatus()==0){
             throw new BusinessException(403,"账号已禁用");
         }
+        String failKey="login:fail:"+loginRequest.getUsername();
+        String failCountString=stringRedisTemplate.opsForValue().get(failKey);
+        int failCount=failCountString==null?0:Integer.parseInt(failCountString);
+        if (failCount>=MAX_FAIL_COUNT){
+            throw new BusinessException(429,"失败次数过多，请待五分钟后重试");
+        }
         if (loginRequest.getPassword()==null||loginRequest.getPassword().isBlank()||!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
+            stringRedisTemplate.opsForValue().increment(failKey);
+            stringRedisTemplate.expire(failKey,LOCK_MINUTES, TimeUnit.MINUTES);
             throw new BusinessException(400,"用户名或密码错误");
         }
         StpUtil.login(user.getId());
+        stringRedisTemplate.delete(failKey);
         return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).build();
     }
 
