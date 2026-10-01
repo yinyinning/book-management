@@ -1,5 +1,6 @@
 package com.teamdev.bookmanagement.service.impl;
 
+import java.util.List;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -83,5 +84,12 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         BookCopy copy = bookCopyService.getById(bookCopyId);
         copy.setStatus(0);
         bookCopyService.updateById(copy);
+    }
+    @Override
+    public List<BorrowRecord> listMyRecord(){
+        Long userId = StpUtil.getLoginIdAsLong();
+        LambdaQueryWrapper<BorrowRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BorrowRecord::getUserId, userId);
+        return this.list(wrapper);
     }
 }
