@@ -1,5 +1,6 @@
 package com.teamdev.bookmanagement.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
 import com.teamdev.bookmanagement.entity.BookCopy;
@@ -47,6 +48,31 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
 
         // 4. 副本状态改成借出(1)
         copy.setStatus(1);
+        bookCopyService.updateById(copy);
+    }
+    @Override
+    @Transactional
+    public void returnBook(Long bookCopyId) {
+        // 1. 查该副本「还没还」的那条记录（book_copy_id = ? 且 status = 0）
+        LambdaQueryWrapper<BorrowRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BorrowRecord::getBookCopyId, bookCopyId)
+                .eq(BorrowRecord::getStatus, 0);
+        BorrowRecord record = this.getOne(wrapper);
+
+        // 2. 查不到 → 该副本没有借出中的记录，无法归还
+        if (record == null) {
+            throw new BusinessException(400, "该副本没有借出中的记录，无法归还");
+        }
+
+        // 3. 填归还信息：returnTime = 现在；逾期记 2，否则记 1
+        LocalDateTime now = LocalDateTime.now();
+        record.setReturnTime(now);
+        record.setStatus(now.isAfter(record.getDueTime()) ? 2 : 1);
+        this.updateById(record);
+
+        // 4. 副本状态改回在馆(0)
+        BookCopy copy = bookCopyService.getById(bookCopyId);
+        copy.setStatus(0);
         bookCopyService.updateById(copy);
     }
 }
