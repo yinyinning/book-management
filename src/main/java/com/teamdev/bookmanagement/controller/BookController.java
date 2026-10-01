@@ -1,5 +1,6 @@
 package com.teamdev.bookmanagement.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.service.BookService;
@@ -31,18 +32,21 @@ public class BookController {
 
     /** 新增书:POST /api/book,body 传 JSON */
     @PostMapping
+    @SaCheckRole("admin")
     public Result<Boolean> add(@RequestBody Book book) {
         return Result.success(bookService.save(book));
     }
 
     /** 修改书:PUT /api/book,body 传 JSON(必须带 id) */
     @PutMapping
+    @SaCheckRole("admin")
     public Result<Boolean> update(@RequestBody Book book) {
         return Result.success(bookService.updateById(book));
     }
 
     /** 删除书:DELETE /api/book/{id} */
     @DeleteMapping("/{id}")
+    @SaCheckRole("admin")
     public Result<Boolean> delete(@PathVariable Long id) {
         return Result.success(bookService.removeById(id));
     }
