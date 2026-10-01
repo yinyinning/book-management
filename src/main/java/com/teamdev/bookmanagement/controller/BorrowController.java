@@ -15,10 +15,10 @@ public class BorrowController {
         this.borrowRecordService = borrowRecordService;
     }
 
-    /** 借书：POST /api/borrow，body 传 {"userId":1,"bookCopyId":2} */
+    /** 借书：POST /api/borrow，body 传 {"bookCopyId":2} */
     @PostMapping
     public Result<Void> borrow(@RequestBody BorrowRequest request) {
-        borrowRecordService.borrow(request.getUserId(), request.getBookCopyId());
+        borrowRecordService.borrow(request.getBookCopyId());
         return Result.success();
     }
 }

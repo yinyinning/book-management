@@ -10,6 +10,7 @@ import com.teamdev.bookmanagement.dto.response.UserResponse;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import com.teamdev.bookmanagement.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ import java.util.concurrent.TimeUnit;
  * ServiceImpl<Mapper, Entity> 是 MyBatis-Plus 提供的通用实现,和上面的 IService 配套。
  * 后面要加自定义业务逻辑(比如登录校验),就在这里补方法。
  */
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     private final BCryptPasswordEncoder passwordEncoder;
@@ -38,6 +40,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(0).status(1).build();
         save(user);
+        log.info("用户{}注册成功",user.getUsername());
     }
 
     @Override
@@ -53,6 +56,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String failCountString=stringRedisTemplate.opsForValue().get(failKey);
         int failCount=failCountString==null?0:Integer.parseInt(failCountString);
         if (failCount>=MAX_FAIL_COUNT){
+            log.warn("用户{}登录失败次数过多，锁定5分钟",user.getUsername());
             throw new BusinessException(429,"失败次数过多，请待五分钟后重试");
         }
         if (loginRequest.getPassword()==null||loginRequest.getPassword().isBlank()||!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())){
@@ -62,6 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         StpUtil.login(user.getId());
         stringRedisTemplate.delete(failKey);
+        log.info("用户{}登录成功",user.getUsername());
         return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).build();
     }
 
@@ -74,7 +79,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user==null){
             throw new BusinessException(400,"更改用户名操作的用户未找到");
         }
-        return update(new LambdaUpdateWrapper<User>().set(User::getUsername,updateUserNameRequest.getUsername()).eq(User::getId,StpUtil.getLoginIdAsLong()));
+        boolean success=update(new LambdaUpdateWrapper<User>().set(User::getUsername,updateUserNameRequest.getUsername()).eq(User::getId,StpUtil.getLoginIdAsLong()));
+        if (success){
+            log.info("用户{}更改用户名为{}成功",user.getUsername(),updateUserNameRequest.getUsername());
+        }
+        else {
+            log.warn("用户{}更改用户名失败",user.getUsername());
+        }
+        return success;
     }
 
     @Override
@@ -90,7 +102,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(400,"旧密码验证错误");
         }
         User newUser= User.builder().password(passwordEncoder.encode(updateUserPasswordRequest.getNewPassword())).role(user.getRole()).status(user.getStatus()).id(user.getId()).username(user.getUsername()).build();
-        return updateById(newUser);
+        boolean success=updateById(newUser);
+        if (success){
+            log.info("用户{}修改密码成功",newUser.getUsername());
+        }
+        else {
+            log.warn("用户{}修改密码失败",newUser.getUsername());
+        }
+        return success;
     }
 
     @Override
