@@ -1,6 +1,5 @@
 package com.teamdev.bookmanagement.controller;
 
-import cn.dev33.satoken.annotation.SaCheckLogin;
 import cn.dev33.satoken.annotation.SaCheckRole;
 import cn.dev33.satoken.stp.StpUtil;
 import com.teamdev.bookmanagement.common.Result;
@@ -58,14 +57,12 @@ public class UserController {
     /** 修改用户名:PUT /api/user/name,body 传 JSON(必须带 id)(不须带id) 注意请求体传role/status有越权风险，需补充token鉴权处理*/
     //已完成
     @PutMapping("/name")
-    @SaCheckLogin
     public Result<Boolean> updateName(@RequestBody @Valid UpdateUserNameRequest updateUserNameRequest) {
         return Result.success(userService.updateUserName(updateUserNameRequest));
     }
 
     /** 修改密码:PUT /api/user/password*///会登出，需要重新登录
-    @PutMapping("password")
-    @SaCheckLogin
+    @PutMapping("/password")
     public Result<Boolean> updatePassword(@RequestBody @Valid UpdateUserPasswordRequest updateUserPasswordRequest){
         Boolean result=userService.updateUserPassword(updateUserPasswordRequest);
         if (result){
