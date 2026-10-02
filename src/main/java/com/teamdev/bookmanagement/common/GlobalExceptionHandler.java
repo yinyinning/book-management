@@ -22,21 +22,25 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Result<?>> noResourceFoundExceptionHandler(NoResourceFoundException noResourceFoundException){
+        log.warn("资源不存在");
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.error(404,"资源不存在"));
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Result<?>> methodArgumentNotValidExceptionHandler(MethodArgumentNotValidException methodArgumentNotValidException){
-        return ResponseEntity.status(400).body(Result.error(400,methodArgumentNotValidException.getBindingResult().getFieldError().getDefaultMessage()));
+        log.warn("参数校验失败:{}",methodArgumentNotValidException.getBindingResult().getFieldError().getDefaultMessage());
+        return ResponseEntity.status(400).body(Result.error(400,"参数校验失败:"+methodArgumentNotValidException.getBindingResult().getFieldError().getDefaultMessage()));
     }
 
     @ExceptionHandler(NotLoginException.class)
     public ResponseEntity<Result<?>> notLoginExceptionHandler(NotLoginException notLoginException){
+        log.warn("未登录或登录已失效:{}",notLoginException.getMessage());
         return ResponseEntity.status(401).body(Result.error(401,"未登录或登录已失效"));
     }
 
     @ExceptionHandler(NotRoleException.class)
     public ResponseEntity<Result<?>> notRoleExceptionHandler(NotRoleException notRoleException){
+        log.warn("无权限:{}",notRoleException.getMessage());
         return ResponseEntity.status(403).body(Result.error(403,"无权限"));
     }
     @ExceptionHandler(Exception.class)

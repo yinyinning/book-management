@@ -135,6 +135,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserStatus(Long id, UpdateUserStatusRequest updateUserStatusRequest){
+        User adminUser=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(404,"进行状态更新的管理员用户不存在"));
         if (updateUserStatusRequest.getStatus()==null || updateUserStatusRequest.getStatus()!=0&&updateUserStatusRequest.getStatus()!=1){
             throw new BusinessException(400,"更新用户状态传入参数非法");
         }
@@ -145,6 +146,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (id==StpUtil.getLoginIdAsLong()){
             throw new BusinessException(400,"管理员不能操作自己");
         }
-        return update(new LambdaUpdateWrapper<User>().set(User::getStatus,updateUserStatusRequest.getStatus()).eq(User::getId,id));
+        boolean success=update(new LambdaUpdateWrapper<User>().set(User::getStatus,updateUserStatusRequest.getStatus()).eq(User::getId,id));
+        if (success){
+            if (updateUserStatusRequest.getStatus()==0) {
+                StpUtil.kickout(id);
+            }
+            log.info("管理员{}将用户{}账号{}成功",adminUser.getUsername(),user.getUsername(),updateUserStatusRequest.getStatus()==0?"冻结":"启用");
+        }
+        return success;
     }
 }
