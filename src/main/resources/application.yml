@@ -23,3 +23,8 @@ mybatis-plus:
     db-config:
       # 主键自增,对应数据库 AUTO_INCREMENT
       id-type: auto
+
+app:
+  admin:
+    username: admin
+    password: ${ADMIN_INIT_PASSWORD:}
