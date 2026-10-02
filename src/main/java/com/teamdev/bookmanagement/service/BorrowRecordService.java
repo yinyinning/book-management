@@ -11,6 +11,6 @@ public interface BorrowRecordService extends IService<BorrowRecord> {
     /** 还书：归还某个副本 */
     void returnBook(Long bookCopyId);
     /** 查询：查询某个用户自己的借阅记录 */
-    List<BorrowRecord> listMyRecord();
+    List<BorrowRecord> listMyRecord(Long id);
 }
 
