@@ -5,6 +5,7 @@ import com.teamdev.bookmanagement.dto.request.BorrowRequest;
 import com.teamdev.bookmanagement.dto.request.ReturnRequest;
 import com.teamdev.bookmanagement.entity.BorrowRecord;
 import com.teamdev.bookmanagement.service.BorrowRecordService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,14 +22,14 @@ public class BorrowController {
 
     /** 借书：POST /api/borrow，body 传 {"bookCopyId":2} */
     @PostMapping
-    public Result<Void> borrow(@RequestBody BorrowRequest request) {
+    public Result<Void> borrow(@Valid @RequestBody BorrowRequest request) {
         borrowRecordService.borrow(request.getBookCopyId());
         return Result.success();
     }
 
     /** 还书：PUT /api/borrow/return，body 传 {"bookCopyId":2}*/
     @PutMapping("/return")
-    public Result<Void> returnBook(@RequestBody ReturnRequest request) {
+    public Result<Void> returnBook(@Valid @RequestBody ReturnRequest request) {
         borrowRecordService.returnBook(request.getBookCopyId());
         return Result.success();
     }
