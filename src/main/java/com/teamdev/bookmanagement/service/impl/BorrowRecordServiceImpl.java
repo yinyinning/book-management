@@ -60,6 +60,7 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         User user=userService.getOptById(userId).orElseThrow(()->new BusinessException(404,"借书操作的用户不存在"));
         log.info("用户{}借副本{}成功",user.getUsername(),copy.getBarcode());
     }
+
     @Override
     @Transactional
     public void returnBook(Long bookCopyId) {
@@ -85,11 +86,13 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         copy.setStatus(0);
         bookCopyService.updateById(copy);
     }
+
     @Override
-    public List<BorrowRecord> listMyRecord(){
-        Long userId = StpUtil.getLoginIdAsLong();
-        LambdaQueryWrapper<BorrowRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BorrowRecord::getUserId, userId);
-        return this.list(wrapper);
+    public List<BorrowRecord> listMyRecord(Long id){
+        User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"查询借阅记录的用户不存在"));
+        if (user.getRole()==1){
+            return list();
+        }
+        return lambdaQuery().eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong()).list();
     }
 }

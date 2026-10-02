@@ -11,6 +11,7 @@ import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import com.teamdev.bookmanagement.service.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,6 +26,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+    @Value("${app.admin.username}")
+    private String adminUsername;
     private final BCryptPasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
     private static final int MAX_FAIL_COUNT=5;
@@ -35,7 +38,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
     @Override
     public void register(RegisterRequest registerRequest) {
-        if (lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
+        if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
             throw new BusinessException(400,"用户名已存在");
         }
         User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(0).status(1).build();

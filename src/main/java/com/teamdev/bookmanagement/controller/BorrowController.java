@@ -1,5 +1,7 @@
 package com.teamdev.bookmanagement.controller;
 
+import cn.dev33.satoken.annotation.SaCheckRole;
+import cn.dev33.satoken.stp.StpUtil;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.BorrowRequest;
 import com.teamdev.bookmanagement.dto.request.ReturnRequest;
@@ -32,14 +34,17 @@ public class BorrowController {
         borrowRecordService.returnBook(request.getBookCopyId());
         return Result.success();
     }
-    /** 查询我的借阅记录：GET /api/borrow/my */
+
+    /** 查询我的借阅记录：GET /api/borrow/my 管理员查询所有借阅记录，普通用户查询自己的借阅记录*/
     @GetMapping("/my")
     public Result<List<BorrowRecord>> listMyRecord() {
-        return Result.success(borrowRecordService.listMyRecord());
+        return Result.success(borrowRecordService.listMyRecord(StpUtil.getLoginIdAsLong()));
     }
-    /** 查询所有借阅记录：GET /api/borrow/list */
-    @GetMapping("/list")
-    public Result<List<BorrowRecord>> listAllRecord() {
-        return Result.success(borrowRecordService.list());
+
+    /** 管理员查询某普通用户借阅记录：GET /api/borrow/{id} */
+    @SaCheckRole("admin")
+    @GetMapping("{id}")
+    public Result<List<BorrowRecord>> listUserAllRecord(@PathVariable Long id) {
+        return Result.success(borrowRecordService.listMyRecord(id));
     }
 }
