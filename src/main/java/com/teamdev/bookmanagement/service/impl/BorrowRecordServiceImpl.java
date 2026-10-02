@@ -62,17 +62,18 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void returnBook(Long bookCopyId) {
-        // 1. 查该副本「还没还」的那条记录（book_copy_id = ? 且 status = 0）
+        // 1. 查该副本「还没还」的那条记录（book_copy_id = ? 且 status = 0）最后比对id防止越权
         LambdaQueryWrapper<BorrowRecord> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(BorrowRecord::getBookCopyId, bookCopyId)
-                .eq(BorrowRecord::getStatus, 0);
+                .eq(BorrowRecord::getStatus, 0)
+                 .eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong());
         BorrowRecord record = this.getOne(wrapper);
 
         // 2. 查不到 → 该副本没有借出中的记录，无法归还
         if (record == null) {
-            throw new BusinessException(400, "该副本没有借出中的记录，无法归还");
+            throw new BusinessException(400, "该副本没有相应的借出中的记录，无法归还");
         }
 
         // 3. 填归还信息：returnTime = 现在；逾期记 2，否则记 1
@@ -85,6 +86,8 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         BookCopy copy = bookCopyService.getById(bookCopyId);
         copy.setStatus(0);
         bookCopyService.updateById(copy);
+        User user=userService.getOptById(record.getUserId()).orElseThrow(()->new BusinessException(404,"还书的用户不存在"));
+        log.info("用户{}还副本{}成功",user.getUsername(),copy.getBarcode());
     }
 
     @Override
