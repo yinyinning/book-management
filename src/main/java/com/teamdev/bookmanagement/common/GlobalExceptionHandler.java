@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(NoResourceFoundException.class)
     public ResponseEntity<Result<?>> noResourceFoundExceptionHandler(NoResourceFoundException noResourceFoundException){
-        log.warn("资源不存在");
+        log.warn("资源不存在:{}",noResourceFoundException.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Result.error(404,"资源不存在"));
     }
 
