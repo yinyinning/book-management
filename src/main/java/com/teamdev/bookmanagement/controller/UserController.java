@@ -97,4 +97,10 @@ public class UserController {
         StpUtil.logout();
         return Result.success();
     }
+    /** 管理员提拔:PUT /api/user/{id}/role */
+    @PutMapping("/{id}/role")
+    @SaCheckRole("super_admin")
+    public Result<Boolean> updateUserRole(@PathVariable Long id, @RequestBody @Valid UpdateUserRoleRequest updateUserRoleRequest){
+        return Result.success(userService.updateUserRole(id,updateUserRoleRequest));
+    }
 }

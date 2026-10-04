@@ -182,4 +182,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return success;
     }
+    @Override
+    public Boolean updateUserRole(Long id, UpdateUserRoleRequest request){
+        User user=lambdaQuery().eq(User::getId,id).one();
+        if (user==null){
+            throw new BusinessException(404,"用户不存在");
+        }
+        if (id==StpUtil.getLoginIdAsLong()){
+            throw new BusinessException(400,"管理员不能操作自己");
+        }
+        boolean success=update(new LambdaUpdateWrapper<User>().set(User::getRole,request.getRole()).eq(User::getId,id));
+        return success;
+    }
 }
