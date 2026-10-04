@@ -18,6 +18,9 @@ public class StpInterfaceImpl implements StpInterface {
         if (user==null){
             return List.of();
         }
+        if (user.getRole()!=null&&user.getRole()==2){
+            return List.of("admin","super_admin");
+        }
         if (user.getRole()!=null&&user.getRole()==1){
             return List.of("admin");
         }

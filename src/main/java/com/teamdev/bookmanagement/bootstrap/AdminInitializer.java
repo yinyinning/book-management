@@ -21,7 +21,7 @@ public class AdminInitializer implements CommandLineRunner {
     private final UserService userService;
     @Override
     public void run(String... args){
-        if (userService.lambdaQuery().eq(User::getRole,1).exists()){
+        if (userService.lambdaQuery().eq(User::getRole,2).exists()){
             log.info("管理员已存在，跳过初始化");
             return;
         }
