@@ -9,8 +9,11 @@ public interface BorrowRecordService extends IService<BorrowRecord> {
     void borrow(Long bookCopyId);
 
     /** 还书：归还某个副本 */
-    void returnBook(Long bookCopyId);
+    void returnBook(Long bookCopyId,BorrowRecord borrowRecord);
+    void userReturnBook(Long bookCopyId);
+    void helpReturnBook(Long bookCopyId);
     /** 查询：查询某个用户自己的借阅记录 */
-    List<BorrowRecord> listMyRecord(Long id);
+    List<BorrowRecord> listUserRecord(Long id);
+    List<BorrowRecord> listMyRecord();
 }
 

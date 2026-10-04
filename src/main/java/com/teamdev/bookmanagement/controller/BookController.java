@@ -34,21 +34,21 @@ public class BookController {
     @PostMapping
     @SaCheckRole("admin")
     public Result<Boolean> add(@RequestBody Book book) {
-        return Result.success(bookService.save(book));
+        return Result.success(bookService.addBook(book));
     }
 
     /** 修改书:PUT /api/book,body 传 JSON(必须带 id) */
     @PutMapping
     @SaCheckRole("admin")
     public Result<Boolean> update(@RequestBody Book book) {
-        return Result.success(bookService.updateById(book));
+        return Result.success(bookService.updateBook(book));
     }
 
     /** 删除书:DELETE /api/book/{id} */
     @DeleteMapping("/{id}")
     @SaCheckRole("admin")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(bookService.removeById(id));
+        return Result.success(bookService.deleteBook(id));
     }
 }
 

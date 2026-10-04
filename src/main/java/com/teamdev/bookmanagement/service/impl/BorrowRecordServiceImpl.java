@@ -1,7 +1,6 @@
 package com.teamdev.bookmanagement.service.impl;
 
 import java.util.List;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
@@ -63,13 +62,8 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void returnBook(Long bookCopyId) {
-        // 1. 查该副本「还没还」的那条记录（book_copy_id = ? 且 status = 0）最后比对id防止越权
-        LambdaQueryWrapper<BorrowRecord> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(BorrowRecord::getBookCopyId, bookCopyId)
-                .eq(BorrowRecord::getStatus, 0)
-                 .eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong());
-        BorrowRecord record = this.getOne(wrapper);
+    public void returnBook(Long bookCopyId,BorrowRecord record) {
+        // 1. 查该副本「还没还」的那条记录（book_copy_id = ? 且 status = 0）最后比对id防止越权，由上一步进行普通用户与管理员的分流
 
         // 2. 查不到 → 该副本没有借出中的记录，无法归还
         if (record == null) {
@@ -91,11 +85,31 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
     }
 
     @Override
-    public List<BorrowRecord> listMyRecord(Long id){
-        User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"查询借阅记录的用户不存在"));
+    @Transactional(rollbackFor = Exception.class)
+    public void userReturnBook(Long bookCopyId){
+        BorrowRecord borrowRecord=lambdaQuery().eq(BorrowRecord::getBookCopyId,bookCopyId).eq(BorrowRecord::getStatus,0).eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong()).one();
+        returnBook(bookCopyId,borrowRecord);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void helpReturnBook(Long bookCopyId){
+        returnBook(bookCopyId,lambdaQuery().eq(BorrowRecord::getBookCopyId,bookCopyId).eq(BorrowRecord::getStatus,0).one());
+        log.info("管理员帮还副本成功");
+    }
+    @Override
+    public List<BorrowRecord> listUserRecord(Long id){
+        User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"借阅记录查询的用户不存在"));
+        return lambdaQuery().eq(BorrowRecord::getUserId,id).list();
+    }
+
+    @Override
+    public List<BorrowRecord> listMyRecord(){
+        Long id=StpUtil.getLoginIdAsLong();
+        User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"进行借阅记录查询的用户不存在"));
         if (user.getRole()==1){
             return list();
         }
-        return lambdaQuery().eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong()).list();
+        return listUserRecord(id);
     }
 }

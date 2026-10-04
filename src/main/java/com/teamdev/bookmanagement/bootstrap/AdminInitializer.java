@@ -33,6 +33,6 @@ public class AdminInitializer implements CommandLineRunner {
             log.warn("存在用户与设置的管理员用户名重复，不创建管理员");
             return;
         }
-        userService.save(User.builder().role(1).username(adminUsername).status(1).password(passwordEncoder.encode(adminPassword)).build());
+        userService.save(User.builder().role(2).username(adminUsername).status(1).password(passwordEncoder.encode(adminPassword)).build());
     }
 }

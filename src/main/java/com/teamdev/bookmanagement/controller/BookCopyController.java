@@ -34,20 +34,20 @@ public class BookCopyController {
     @PostMapping
     @SaCheckRole("admin")
     public Result<Boolean> add(@RequestBody BookCopy bookCopy) {
-        return Result.success(bookCopyService.save(bookCopy));
+        return Result.success(bookCopyService.addBookCopy(bookCopy));
     }
 
     /** 修改副本:PUT /api/book-copy,body 传 JSON(必须带 id) */
     @PutMapping
     @SaCheckRole("admin")
     public Result<Boolean> update(@RequestBody BookCopy bookCopy) {
-        return Result.success(bookCopyService.updateById(bookCopy));
+        return Result.success(bookCopyService.updateBookCopy(bookCopy));
     }
 
     /** 删除副本:DELETE /api/book-copy/{id} */
     @DeleteMapping("/{id}")
     @SaCheckRole("admin")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(bookCopyService.removeById(id));
+        return Result.success(bookCopyService.deleteBookCopy(id));
     }
 }

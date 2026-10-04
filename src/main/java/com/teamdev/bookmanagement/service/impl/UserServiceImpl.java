@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     @Value("${app.admin.username}")
     private String adminUsername;
+    @Value("${app.admin.user_password}")
+    private String resetUserPassword;
     private final BCryptPasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
     private static final int MAX_FAIL_COUNT=5;
@@ -111,6 +113,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         else {
             log.warn("用户{}修改密码失败",newUser.getUsername());
+        }
+        return success;
+    }
+
+    @Override
+    public Boolean helpResetPassword(Long id){
+        if (resetUserPassword==null||resetUserPassword.isBlank()){
+            log.warn("未设置重置后密码，重置失败");
+            throw new BusinessException(404,"未设置重置后密码");
+        }
+        User user=getOptById(id).orElseThrow(()->new BusinessException(404,"重置密码的用户不存在"));
+        if (user.getRole().equals(2)){
+            log.warn("重置密码操作无权限");
+            throw new BusinessException(403,"无权限");
+        }
+        User actionUser=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(404,"进行密码重置操作的用户不存在"));
+        if (user.getRole().equals(1)){
+            if (!actionUser.getRole().equals(2)){
+                throw new BusinessException(403,"无权限");
+            }
+        }
+        boolean success=lambdaUpdate().set(User::getPassword,passwordEncoder.encode(resetUserPassword)).eq(User::getId,id).update();
+        log.info("管理员[{}]重置用户[{}]“{}”的密码{}",StpUtil.getLoginIdAsLong(),id,user.getUsername(),success?"成功":"失败");
+        if (success){
+            StpUtil.kickout(id);
         }
         return success;
     }
