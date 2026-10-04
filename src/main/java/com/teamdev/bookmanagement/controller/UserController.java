@@ -54,6 +54,13 @@ public class UserController {
         return Result.success(userService.removeById(id));
     }
 
+    /** 管理员重置密码:PUT /api/user/help/password*///会登出，重新登录
+    @PutMapping("/help/password/{id}")
+    @SaCheckRole("admin")
+    public Result<Boolean> helpResetPassword(@PathVariable Long id){
+        return Result.success(userService.helpResetPassword(id));
+    }
+
     /** 修改用户名:PUT /api/user/name,body 传 JSON(必须带 id)(不须带id) 注意请求体传role/status有越权风险，需补充token鉴权处理*/
     //已完成
     @PutMapping("/name")

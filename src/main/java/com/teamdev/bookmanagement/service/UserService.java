@@ -14,6 +14,7 @@ import java.util.List;
 public interface UserService extends IService<User> {
     void register(RegisterRequest registerRequest);
     LoginResponse login(LoginRequest loginRequest);
+    Boolean helpResetPassword(Long id);
     Boolean updateUserName(UpdateUserNameRequest updateUserNameRequest);
     Boolean updateUserPassword(UpdateUserPasswordRequest updateUserPasswordRequest);
     UserResponse getById(Long id);

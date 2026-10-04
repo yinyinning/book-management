@@ -28,3 +28,4 @@ app:
   admin:
     username: admin
     password: ${ADMIN_INIT_PASSWORD:}
+    user_password: ${RESET_USER_PASSWORD:}
