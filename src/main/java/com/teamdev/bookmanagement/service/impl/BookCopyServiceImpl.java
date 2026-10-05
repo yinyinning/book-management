@@ -4,6 +4,8 @@ import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
+import com.teamdev.bookmanagement.dto.request.AddBookCopyRequest;
+import com.teamdev.bookmanagement.dto.request.UpdateBookCopyRequest;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookCopy;
 import com.teamdev.bookmanagement.entity.BorrowRecord;
@@ -23,38 +25,35 @@ public class BookCopyServiceImpl extends ServiceImpl<BookCopyMapper, BookCopy> i
     private final BorrowRecordMapper borrowRecordMapper;
 
     @Override
-    public Boolean addBookCopy(BookCopy bookCopy){
-        if (bookCopy.getBookId()==null||bookCopy.getBarcode()==null||bookCopy.getBarcode().isBlank()){
-            throw new BusinessException(400,"图书id和馆藏编码不能为空");
-        }
-        Book book=bookService.getOptById(bookCopy.getBookId()).orElseThrow(()->new BusinessException(404,"图书不存在"));
-        if (lambdaQuery().eq(BookCopy::getBarcode,bookCopy.getBarcode()).exists()){
+    public Boolean addBookCopy(AddBookCopyRequest addBookCopyRequest){
+        Book book=bookService.getOptById(addBookCopyRequest.getBookId()).orElseThrow(()->new BusinessException(404,"图书不存在"));
+        if (lambdaQuery().eq(BookCopy::getBarcode,addBookCopyRequest.getBarcode()).exists()){
             throw new BusinessException(400,"馆藏编码已存在");
         }
-        boolean success=save(bookCopy);
-        log.info("管理员[{}]增加图书《{}》(ISBN:{})的副本(BARCODE:{}){}", StpUtil.getLoginIdAsLong(),book.getTitle(),book.getIsbn(),bookCopy.getBarcode(),success?"成功":"失败");
+        boolean success=save(BookCopy.builder().bookId(addBookCopyRequest.getBookId()).barcode(addBookCopyRequest.getBarcode()).status(0).build());
+        log.info("管理员[{}]增加图书《{}》(ISBN:{})的副本(BARCODE:{}){}", StpUtil.getLoginIdAsLong(),book.getTitle(),book.getIsbn(),addBookCopyRequest.getBarcode(),success?"成功":"失败");
         return success;
     }
 
     @Override
-    public Boolean updateBookCopy(BookCopy updateBookCopy){
-        if (updateBookCopy.getId()==null){
-            throw new BusinessException(400,"副本id不能为空");
-        }
-        BookCopy bookCopy=getOptById(updateBookCopy.getId()).orElseThrow(()->new BusinessException(404,"副本不存在"));
+    public Boolean updateBookCopy(UpdateBookCopyRequest updateBookCopyRequest){
+        BookCopy bookCopy=getOptById(updateBookCopyRequest.getId()).orElseThrow(()->new BusinessException(404,"副本不存在"));
         Book book=bookService.getOptById(bookCopy.getBookId()).orElseThrow(()->new BusinessException(404,"意料外的错误:原副本图书不存在"));
-        if (!(updateBookCopy.getBarcode()==null||updateBookCopy.getBarcode().isBlank())&&lambdaQuery().eq(BookCopy::getBarcode,updateBookCopy.getBarcode()).ne(BookCopy::getId,updateBookCopy.getId()).exists()){
+        if (!(updateBookCopyRequest.getBarcode()==null||updateBookCopyRequest.getBarcode().isBlank())&&lambdaQuery().eq(BookCopy::getBarcode,updateBookCopyRequest.getBarcode()).ne(BookCopy::getId,updateBookCopyRequest.getId()).exists()){
             throw new BusinessException(400,"barcode已被占用，更新失败");
         }
-        if (updateBookCopy.getBarcode()==null||updateBookCopy.getBarcode().isBlank()){
-            updateBookCopy.setBarcode(bookCopy.getBarcode());
+        if (updateBookCopyRequest.getBarcode()==null||updateBookCopyRequest.getBarcode().isBlank()){
+            updateBookCopyRequest.setBarcode(bookCopy.getBarcode());
         }
-        if (updateBookCopy.getBookId()==null){
-            updateBookCopy.setBookId(bookCopy.getBookId());
+        if (updateBookCopyRequest.getBookId()==null){
+            updateBookCopyRequest.setBookId(bookCopy.getBookId());
         }
-        Book updateBook=bookService.getOptById(updateBookCopy.getBookId()).orElseThrow(()->new BusinessException(404,"图书不存在"));
-        boolean success=updateById(updateBookCopy);
-        log.info("管理员[{}]更新副本id为[{}]的书《{}》(ISBN:{})的副本(BARCODE:{})更新为书《{}》(ISBN:{})的副本(BARCODE:{}){}",StpUtil.getLoginIdAsLong(),updateBookCopy.getId(),book.getTitle(),book.getIsbn(),bookCopy.getBarcode(),updateBook.getTitle(),updateBook.getIsbn(),updateBookCopy.getBarcode(),success?"成功":"失败");
+        if (updateBookCopyRequest.getStatus()==null){
+            updateBookCopyRequest.setStatus(bookCopy.getStatus());
+        }
+        Book updateBook=bookService.getOptById(updateBookCopyRequest.getBookId()).orElseThrow(()->new BusinessException(404,"图书不存在"));
+        boolean success=updateById(BookCopy.builder().id(updateBookCopyRequest.getId()).barcode(updateBookCopyRequest.getBarcode()).bookId(updateBookCopyRequest.getBookId()).status(updateBookCopyRequest.getStatus()).build());
+        log.info("管理员[{}]更新副本id为[{}]的书《{}》(ISBN:{})的副本(BARCODE:{})更新为书《{}》(ISBN:{})的副本(BARCODE:{}){}",StpUtil.getLoginIdAsLong(),updateBookCopyRequest.getId(),book.getTitle(),book.getIsbn(),bookCopy.getBarcode(),updateBook.getTitle(),updateBook.getIsbn(),updateBookCopyRequest.getBarcode(),success?"成功":"失败");
         return success;
     }
 

@@ -41,7 +41,7 @@ public class BorrowController {
         borrowRecordService.helpReturnBook(request.getBookCopyId());
         return Result.success();
     }
-    /** 查询我的借阅记录：GET /api/borrow/my 管理员查询所有借阅记录，普通用户查询自己的借阅记录*/
+    /** 查询我的借阅记录：GET /api/borrow/my 用户查询自己的借阅记录*/
     @GetMapping("/my")
     public Result<List<BorrowRecord>> listMyRecord() {
         return Result.success(borrowRecordService.listMyRecord());
@@ -49,8 +49,15 @@ public class BorrowController {
 
     /** 管理员查询某普通用户借阅记录：GET /api/borrow/{id} */
     @SaCheckRole("admin")
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public Result<List<BorrowRecord>> listUserAllRecord(@PathVariable Long id) {
         return Result.success(borrowRecordService.listUserRecord(id));
+    }
+
+    /** 管理员查询所有借阅记录：GET /api/borrow/all */
+    @SaCheckRole("admin")
+    @GetMapping("/all")
+    public Result<List<BorrowRecord>> listAllRecord(){
+        return Result.success(borrowRecordService.listAllRecord());
     }
 }

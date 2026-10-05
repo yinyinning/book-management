@@ -15,5 +15,6 @@ public interface BorrowRecordService extends IService<BorrowRecord> {
     /** 查询：查询某个用户自己的借阅记录 */
     List<BorrowRecord> listUserRecord(Long id);
     List<BorrowRecord> listMyRecord();
+    List<BorrowRecord> listAllRecord();
 }
 

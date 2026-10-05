@@ -100,16 +100,19 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
     @Override
     public List<BorrowRecord> listUserRecord(Long id){
         User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"借阅记录查询的用户不存在"));
-        return lambdaQuery().eq(BorrowRecord::getUserId,id).list();
+        List<BorrowRecord> borrowRecordList=lambdaQuery().eq(BorrowRecord::getUserId,id).list();
+        log.debug("查询用户{}的借阅记录成功",user.getUsername());
+        return borrowRecordList;
     }
 
     @Override
     public List<BorrowRecord> listMyRecord(){
         Long id=StpUtil.getLoginIdAsLong();
-        User user=userService.getOptById(id).orElseThrow(()->new BusinessException(404,"进行借阅记录查询的用户不存在"));
-        if (user.getRole()==1){
-            return list();
-        }
         return listUserRecord(id);
+    }
+
+    @Override
+    public List<BorrowRecord> listAllRecord(){
+        return lambdaQuery().orderByDesc(BorrowRecord::getBorrowTime).list();
     }
 }
