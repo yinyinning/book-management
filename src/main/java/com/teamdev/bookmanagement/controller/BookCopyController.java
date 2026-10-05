@@ -2,8 +2,11 @@ package com.teamdev.bookmanagement.controller;
 
 import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
+import com.teamdev.bookmanagement.dto.request.AddBookCopyRequest;
+import com.teamdev.bookmanagement.dto.request.UpdateBookCopyRequest;
 import com.teamdev.bookmanagement.entity.BookCopy;
 import com.teamdev.bookmanagement.service.BookCopyService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,15 +36,15 @@ public class BookCopyController {
     /** 新增副本:POST /api/book-copy,body 传 JSON */
     @PostMapping
     @SaCheckRole("admin")
-    public Result<Boolean> add(@RequestBody BookCopy bookCopy) {
-        return Result.success(bookCopyService.addBookCopy(bookCopy));
+    public Result<Boolean> add(@Valid @RequestBody AddBookCopyRequest addBookCopyRequest) {
+        return Result.success(bookCopyService.addBookCopy(addBookCopyRequest));
     }
 
     /** 修改副本:PUT /api/book-copy,body 传 JSON(必须带 id) */
     @PutMapping
     @SaCheckRole("admin")
-    public Result<Boolean> update(@RequestBody BookCopy bookCopy) {
-        return Result.success(bookCopyService.updateBookCopy(bookCopy));
+    public Result<Boolean> update(@Valid @RequestBody UpdateBookCopyRequest updateBookCopyRequest) {
+        return Result.success(bookCopyService.updateBookCopy(updateBookCopyRequest));
     }
 
     /** 删除副本:DELETE /api/book-copy/{id} */
