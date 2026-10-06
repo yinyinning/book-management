@@ -38,6 +38,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         passwordEncoder=bCryptPasswordEncoder;
         this.stringRedisTemplate=stringRedisTemplate;
     }
+
     @Override
     public void register(RegisterRequest registerRequest) {
         if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){

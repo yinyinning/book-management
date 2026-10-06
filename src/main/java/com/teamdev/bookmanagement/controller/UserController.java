@@ -91,7 +91,7 @@ public class UserController {
         return Result.success(userService.login(loginRequest));
     }
 
-    /** 用户退出登录:POST /api/user/logout*/
+    /** 用户退出登录:PUT /api/user/logout*/
     @PutMapping("/logout")
     public Result<Void> logout(){
         StpUtil.logout();

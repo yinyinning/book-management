@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @TableName("book")
 public class Book {
+
     /** 书ID,主键自增 */
     @TableId(type = IdType.AUTO)
     private Long id;
