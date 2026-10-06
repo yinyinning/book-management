@@ -1,13 +1,16 @@
 package com.teamdev.bookmanagement.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
+import com.teamdev.bookmanagement.entity.SuperAdminTransfer;
 import com.teamdev.bookmanagement.entity.User;
+import com.teamdev.bookmanagement.mapper.SuperAdminTransferMapper;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import com.teamdev.bookmanagement.service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +18,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -32,11 +37,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private String resetUserPassword;
     private final BCryptPasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
+    private final SuperAdminTransferMapper superAdminTransferMapper;
     private static final int MAX_FAIL_COUNT=5;
     private static final int LOCK_MINUTES=5;
-    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder, StringRedisTemplate stringRedisTemplate){
+    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder, StringRedisTemplate stringRedisTemplate,
+                           SuperAdminTransferMapper superAdminTransferMapper){
         passwordEncoder=bCryptPasswordEncoder;
         this.stringRedisTemplate=stringRedisTemplate;
+        this.superAdminTransferMapper=superAdminTransferMapper;
     }
 
     @Override
@@ -192,7 +200,40 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (id==StpUtil.getLoginIdAsLong()){
             throw new BusinessException(400,"管理员不能操作自己");
         }
+        // role=2 表示发起超级管理员转让,不是立即改角色
+        if (request.getRole()==2){
+            // 禁止重复发起:已存在待生效(status=0)的转让时拒绝
+            Long pendingCount = superAdminTransferMapper.selectCount(
+                    new LambdaQueryWrapper<SuperAdminTransfer>().eq(SuperAdminTransfer::getStatus, 0)
+            );
+            if (pendingCount!=null && pendingCount>0){
+                throw new BusinessException(400,"已有待生效的转让,禁止重复发起");
+            }
+            // 插入一条待生效的转让记录,1 天后由定时任务执行
+            SuperAdminTransfer transfer=new SuperAdminTransfer();
+            transfer.setFromUserId(StpUtil.getLoginIdAsLong());
+            transfer.setToUserId(id);
+            transfer.setStatus(0);
+            transfer.setExpireTime(LocalDateTime.now().plusDays(1));
+            superAdminTransferMapper.insert(transfer);
+            return true;
+        }
+        // role=0/1:立即生效
         boolean success=update(new LambdaUpdateWrapper<User>().set(User::getRole,request.getRole()).eq(User::getId,id));
         return success;
+    }
+    @Override
+    public Boolean cancelTransfer(){
+        SuperAdminTransfer transfer = superAdminTransferMapper.selectOne(
+                new LambdaQueryWrapper<SuperAdminTransfer>()
+                        .eq(SuperAdminTransfer::getFromUserId, StpUtil.getLoginIdAsLong())
+                        .eq(SuperAdminTransfer::getStatus, 0)
+        );
+        if (transfer==null){
+            throw new BusinessException(400,"没有待生效的转让");
+        }
+        transfer.setStatus(2);
+        superAdminTransferMapper.updateById(transfer);
+        return true;
     }
 }
