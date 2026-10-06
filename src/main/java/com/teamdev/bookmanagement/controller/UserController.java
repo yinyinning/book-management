@@ -103,4 +103,10 @@ public class UserController {
     public Result<Boolean> updateUserRole(@PathVariable Long id, @RequestBody @Valid UpdateUserRoleRequest updateUserRoleRequest){
         return Result.success(userService.updateUserRole(id,updateUserRoleRequest));
     }
+    /** 取消超级管理员转让:POST /api/user/transfer/cancel */
+    @PostMapping("/transfer/cancel")
+    @SaCheckRole("super_admin")
+    public Result<Boolean> cancelTransfer(){
+        return Result.success(userService.cancelTransfer());
+    }
 }

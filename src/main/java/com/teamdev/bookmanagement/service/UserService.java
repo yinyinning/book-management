@@ -21,4 +21,5 @@ public interface UserService extends IService<User> {
     List<UserResponse> listUsers();
     Boolean updateUserStatus(Long id, UpdateUserStatusRequest updateUserStatusRequest);
     Boolean updateUserRole(Long id, UpdateUserRoleRequest request);
+    Boolean cancelTransfer();
 }

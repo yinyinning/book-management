@@ -6,7 +6,7 @@ CREATE TABLE `user` (
 `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
 `username` VARCHAR(50) NOT NULL COMMENT '用户名',
 `password` VARCHAR(100) NOT NULL COMMENT '密码（加密存储）',
-`role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0=普通用户，1=管理员',
+`role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0=普通用户，1=管理员，2=超级管理员',
 `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1=正常，0=禁用',
 `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -78,3 +78,15 @@ CREATE TABLE `announcement` (
 PRIMARY KEY (`id`),
 KEY idx_publisher_id (`publisher_id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通告表';
+
+DROP TABLE IF EXISTS `super_admin_transfer`;
+CREATE TABLE `super_admin_transfer`(
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '转让记录ID',
+`from_user_id` BIGINT NOT NULL COMMENT '发起转让的超级管理员ID',
+`to_user_id` BIGINT NOT NULL COMMENT '被提拔的用户ID',
+`status` TINYINT NOT NULL DEFAULT 0 COMMENT '0=待生效，1=已生效，2=已取消',
+`expire_time` DATETIME NOT NULL COMMENT '生效时间',
+`create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发起时间',
+PRIMARY KEY (`id`),
+KEY idx_status (`status`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='超级管理员转让表';

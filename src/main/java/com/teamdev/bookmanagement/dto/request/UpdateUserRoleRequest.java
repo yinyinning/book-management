@@ -9,6 +9,6 @@ import lombok.Data;
 public class UpdateUserRoleRequest {
     @NotNull(message = "角色不能为空")
     @Min(0)
-    @Max(1)
+    @Max(2)
     private Integer role;
 }
