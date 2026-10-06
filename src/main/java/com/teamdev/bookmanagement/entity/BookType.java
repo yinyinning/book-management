@@ -8,23 +8,13 @@ import lombok.Data;
 
 @Data
 @Builder
-@TableName("book_copy")
-public class BookCopy {
+@TableName("book_type")
+public class BookType {
 
-    /** 副本ID,主键自增 */
+    /** 类型id，主键自增 */
     @TableId(type = IdType.AUTO)
     private Long id;
 
-    /** 图书id */
-    private Long bookId;
-
-    /** 馆藏编码 */
-    private String barcode;
-
-    /**副本状态*/
-    private Integer status;
-
-
+    /** 类型名称 */
+    private String name;
 }
-
-

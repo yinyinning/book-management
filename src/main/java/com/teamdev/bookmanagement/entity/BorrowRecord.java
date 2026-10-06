@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 @Data
 @TableName("borrow_record")
 public class BorrowRecord {
+
     /** 记录ID,主键自增 */
     @TableId(type = IdType.AUTO)
     private Long id;

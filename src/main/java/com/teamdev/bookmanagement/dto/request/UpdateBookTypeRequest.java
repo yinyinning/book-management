@@ -7,14 +7,13 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 @Data
-public class AddBookCopyRequest {
-    /** 图书id */
-    @NotNull
-    private Long bookId;
+public class UpdateBookTypeRequest {
 
-    /** 馆藏编码 */
+    @NotNull
+    private Long id;
+
     @NotBlank
-    @Size(max = 100)
-    @Pattern(regexp = "^\\S+$",message = "馆藏编码不能包含空白字符")
-    private String barcode;
+    @Size(min = 2,max = 20,message = "分类名称应当在2-20字符之间")
+    @Pattern(regexp = "^\\S+$",message = "分类名称不能包含空白字符")
+    private String name;
 }

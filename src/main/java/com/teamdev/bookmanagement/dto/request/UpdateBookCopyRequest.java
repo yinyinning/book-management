@@ -1,9 +1,6 @@
 package com.teamdev.bookmanagement.dto.request;
 
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Data;
 
 @Data
@@ -16,6 +13,7 @@ public class UpdateBookCopyRequest {
 
     /** 馆藏编码 */
     @Size(max = 100)
+    @Pattern(regexp = "^\\S+$",message = "馆藏编码不能包含空白字符")
     private String barcode;
 
     /**副本状态*/
