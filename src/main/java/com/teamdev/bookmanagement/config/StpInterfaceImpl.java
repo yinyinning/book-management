@@ -5,12 +5,14 @@ import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-
 import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class StpInterfaceImpl implements StpInterface {
+
     private final UserMapper userMapper;
+
     @Override
     public List<String> getRoleList(Object loginId,String loginType){
         Long userId=Long.valueOf(loginId.toString());
@@ -26,6 +28,7 @@ public class StpInterfaceImpl implements StpInterface {
         }
         return List.of("user");
     }
+
     @Override
     public List<String> getPermissionList(Object loginId,String loginType){
         return List.of();

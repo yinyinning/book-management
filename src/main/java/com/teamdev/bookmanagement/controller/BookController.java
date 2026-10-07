@@ -4,6 +4,8 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.AddBookRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookRequest;
+import com.teamdev.bookmanagement.dto.response.BookResponse;
+import com.teamdev.bookmanagement.dto.response.PageResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.service.BookService;
 import jakarta.validation.Valid;
@@ -23,14 +25,20 @@ public class BookController {
 
     /** 按 id 查询单本书:GET /api/book/1 */
     @GetMapping("/{id}")
-    public Result<Book> getById(@PathVariable Long id) {
-        return Result.success(bookService.getById(id));
+    public Result<BookResponse> getById(@PathVariable Long id) {
+        return Result.success(bookService.getBookById(id));
     }
 
     /** 查询所有书:GET /api/book/list */
     @GetMapping("/list")
-    public Result<List<Book>> list() {
-        return Result.success(bookService.list());
+    public Result<List<BookResponse>> list() {
+        return Result.success(bookService.listBooks());
+    }
+
+    /** 模糊分页查书:GET /api/book/search */
+    @GetMapping("/search")
+    public Result<PageResponse<BookResponse>> search(@RequestParam String keyword,@RequestParam(defaultValue = "1") Integer pageNum,@RequestParam(defaultValue = "10") Integer pageSize){
+        return Result.success(bookService.search(keyword,pageNum,pageSize));
     }
 
     /** 新增书:POST /api/book,body 传 JSON */
