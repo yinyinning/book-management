@@ -13,7 +13,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 @RequiredArgsConstructor
 public class SaTokenConfig implements WebMvcConfigurer {
+
     private final UserService userService;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry){
         registry.addInterceptor(new SaInterceptor(handle-> checkLoginAndStatus())).addPathPatterns("/**").excludePathPatterns("/api/user/login","/api/user/register");

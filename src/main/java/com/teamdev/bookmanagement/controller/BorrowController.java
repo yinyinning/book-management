@@ -4,7 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.BorrowRequest;
 import com.teamdev.bookmanagement.dto.request.ReturnRequest;
-import com.teamdev.bookmanagement.entity.BorrowRecord;
+import com.teamdev.bookmanagement.dto.response.BorrowRecordResponse;
 import com.teamdev.bookmanagement.service.BorrowRecordService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -43,21 +43,21 @@ public class BorrowController {
     }
     /** 查询我的借阅记录：GET /api/borrow/my 用户查询自己的借阅记录*/
     @GetMapping("/my")
-    public Result<List<BorrowRecord>> listMyRecord() {
+    public Result<List<BorrowRecordResponse>> listMyRecord() {
         return Result.success(borrowRecordService.listMyRecord());
     }
 
     /** 管理员查询某普通用户借阅记录：GET /api/borrow/{id} */
     @SaCheckRole("admin")
     @GetMapping("/{id}")
-    public Result<List<BorrowRecord>> listUserAllRecord(@PathVariable Long id) {
+    public Result<List<BorrowRecordResponse>> listUserAllRecord(@PathVariable Long id) {
         return Result.success(borrowRecordService.listUserRecord(id));
     }
 
     /** 管理员查询所有借阅记录：GET /api/borrow/all */
     @SaCheckRole("admin")
     @GetMapping("/all")
-    public Result<List<BorrowRecord>> listAllRecord(){
+    public Result<List<BorrowRecordResponse>> listAllRecord(){
         return Result.success(borrowRecordService.listAllRecord());
     }
 }
