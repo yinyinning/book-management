@@ -16,12 +16,14 @@ import com.teamdev.bookmanagement.service.BookService;
 import com.teamdev.bookmanagement.service.BookTypeService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import static com.teamdev.bookmanagement.common.CacheKeys.BOOK_DETAIL_PREFIX;
+import static com.teamdev.bookmanagement.common.CacheKeys.BOOK_LIST_KEY;
 
 @Slf4j
 @Service
@@ -29,6 +31,7 @@ import java.util.List;
 public class BookTypeServiceImpl extends ServiceImpl<BookTypeMapper, BookType> implements BookTypeService {
     private final BookTypeRelMapper bookTypeRelMapper;
     private final BookService bookService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     @Override
     public Boolean addBookType(AddBookTypeRequest addBookTypeRequest){
@@ -76,6 +79,8 @@ public class BookTypeServiceImpl extends ServiceImpl<BookTypeMapper, BookType> i
             if (!(bookTypeRelMapper.insert(BookTypeRel.builder().bookId(bookId).typeId(typeId).build())>0)){
                 throw new BusinessException(400,"设置图书分类失败");
             }
+            stringRedisTemplate.delete(BOOK_DETAIL_PREFIX+bookId);
+            stringRedisTemplate.delete(BOOK_LIST_KEY);
             log.info("管理员[{}]设置图书[{}]《{}》(ISBN:{})分类为[{}]“{}”成功",StpUtil.getLoginIdAsLong(),book.getId(),book.getTitle(),book.getIsbn(),bookType.getId(),bookType.getName());
         }
         return true;
@@ -86,6 +91,8 @@ public class BookTypeServiceImpl extends ServiceImpl<BookTypeMapper, BookType> i
     public Boolean clearBookTypes(Long bookId){
         Book book=bookService.getOptById(bookId).orElseThrow(()->new BusinessException(404,"要清空分类的书不存在"));
         bookTypeRelMapper.delete(new LambdaQueryWrapper<BookTypeRel>().eq(BookTypeRel::getBookId,bookId));
+        stringRedisTemplate.delete(BOOK_DETAIL_PREFIX+bookId);
+        stringRedisTemplate.delete(BOOK_LIST_KEY);
         log.info("管理员[{}]清空图书[{}]《{}》(ISBN:{})的分类成功",StpUtil.getLoginIdAsLong(),bookId,book.getTitle(),book.getIsbn());
         return true;
     }
