@@ -73,6 +73,7 @@ CREATE TABLE `announcement` (
 `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '通告ID',
 `title` VARCHAR(100) NOT NULL COMMENT '标题',
 `content` TEXT NOT NULL COMMENT '内容',
+`type` TINYINT NOT NULL DEFAULT 0 COMMENT '通告类型：0=公告,1=申诉',
 `publisher_id` BIGINT NOT NULL COMMENT '发布人ID',
 `publish_time` DATETIME NOT NULL COMMENT '发布时间',
 PRIMARY KEY (`id`),
