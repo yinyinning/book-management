@@ -8,9 +8,9 @@ export const useAuthStore = defineStore('auth', () => {
   const username = ref('')
   const role = ref(0)
 
-  async function doLogin(u: string, p: string) {
+  async function doLogin(u: string, p: string, cId: string, cCode: string) {
     try {
-      const result = await login(u, p)
+      const result = await login(u, p, cId, cCode)
       token.value = result.token
       id.value = result.id
       username.value = result.username
