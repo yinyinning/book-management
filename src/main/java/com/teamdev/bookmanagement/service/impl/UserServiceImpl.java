@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
+import com.teamdev.bookmanagement.common.CacheKeys;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
@@ -49,6 +50,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void register(RegisterRequest registerRequest) {
+        String captchaKey= CacheKeys.CAPTCHA_PREFIX+registerRequest.getCaptchaId();
+        String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
+        stringRedisTemplate.delete(captchaKey);
+        if (captchaCode==null||!captchaCode.equalsIgnoreCase(registerRequest.getCaptchaCode())){
+            throw new BusinessException(400,"验证码错误或过期");
+        }
         if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
             throw new BusinessException(400,"用户名已存在");
         }
@@ -59,6 +66,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
+        String captchaKey= CacheKeys.CAPTCHA_PREFIX+loginRequest.getCaptchaId();
+        String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
+        stringRedisTemplate.delete(captchaKey);
+        if (captchaCode==null||!captchaCode.equalsIgnoreCase(loginRequest.getCaptchaCode())){
+            throw new BusinessException(400,"验证码错误或过期");
+        }
         User user=lambdaQuery().eq(User::getUsername,loginRequest.getUsername()).one();
         if (user==null) {
             throw new BusinessException(400, "用户名或密码错误");
@@ -219,8 +232,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             return true;
         }
         // role=0/1:立即生效
-        boolean success=update(new LambdaUpdateWrapper<User>().set(User::getRole,request.getRole()).eq(User::getId,id));
-        return success;
+        return update(new LambdaUpdateWrapper<User>().set(User::getRole,request.getRole()).eq(User::getId,id));
     }
     @Override
     public Boolean cancelTransfer(){
