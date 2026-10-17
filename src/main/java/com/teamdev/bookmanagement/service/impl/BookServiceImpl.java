@@ -141,14 +141,16 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     }
 
     @Override
-    public Boolean addBook(AddBookRequest addBookRequest){
+    public Long addBook(AddBookRequest addBookRequest){
         if (lambdaQuery().eq(Book::getIsbn,addBookRequest.getIsbn()).exists()){
             throw new BusinessException(400,"ISBN已存在");
         }
-        boolean success=save(Book.builder().author(addBookRequest.getAuthor()).publisher(addBookRequest.getPublisher()).title(addBookRequest.getTitle()).isbn(addBookRequest.getIsbn()).build());
-        log.info("管理员[{}]新增图书《{}》(ISBN:{}){}", StpUtil.getLoginIdAsLong(),addBookRequest.getTitle(),addBookRequest.getIsbn(),success?"成功":"失败");
+        Book book = Book.builder().author(addBookRequest.getAuthor()).publisher(addBookRequest.getPublisher()).title(addBookRequest.getTitle()).isbn(addBookRequest.getIsbn()).build();
+        boolean success=save(book);
+        log.info("管理员[{}]新增图书《{}》(ISBN:{}){}",
+                StpUtil.getLoginIdAsLong(),addBookRequest.getTitle(),addBookRequest.getIsbn(),success?"成功":"失败");
         stringRedisTemplate.delete(BOOK_LIST_KEY);
-        return success;
+        return success ? book.getId() : null;
     }
 
     @Override

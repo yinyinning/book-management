@@ -12,7 +12,7 @@ import java.util.List;
 public interface BookService extends IService<Book> {
     BookResponse getBookById(Long bookId);
     List<BookResponse> listBooks();
-    Boolean addBook(AddBookRequest addBookRequest);
+    Long addBook(AddBookRequest addBookRequest);
     Boolean updateBook(UpdateBookRequest updateBookRequest);
     Boolean deleteBook(Long id);
     PageResponse<BookResponse> search(String keyword,Integer pageNum,Integer pageSize);

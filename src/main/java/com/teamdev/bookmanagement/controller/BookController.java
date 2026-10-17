@@ -44,7 +44,7 @@ public class BookController {
     /** 新增书:POST /api/book,body 传 JSON */
     @PostMapping
     @SaCheckRole("admin")
-    public Result<Boolean> add(@Valid @RequestBody AddBookRequest addBookRequest) {
+    public Result<Long> add(@Valid @RequestBody AddBookRequest addBookRequest) {
         return Result.success(bookService.addBook(addBookRequest));
     }
 
