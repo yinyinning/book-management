@@ -1,5 +1,6 @@
 import axios from "axios"
 import { ElMessage } from "element-plus"
+import { useAuthStore } from "@/stores/auth"
 
 const request = axios.create({
   baseURL: '/api',
@@ -8,7 +9,7 @@ const request = axios.create({
 
 request.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token')
+    const token = useAuthStore().token
     if (token) {
       config.headers.satoken = token
     }
@@ -25,7 +26,7 @@ request.interceptors.response.use(
     if(data){
       ElMessage.error(data.message || '请求失败，请稍后再试')
       if(data.code===401){
-        localStorage.removeItem('token')
+        useAuthStore().logout()
         window.location.href='/login'
       }
     }

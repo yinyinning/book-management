@@ -8,6 +8,10 @@ import lombok.Data;
 
 @Data
 public class RegisterRequest {
+    @NotBlank(message = "验证码标识不能为空")
+    private String captchaId;
+    @NotBlank(message = "验证码不能为空")
+    private String captchaCode;
     @NotBlank(message = "用户名不能为空")
     @Size(min = 3,max = 20,message = "用户名只能3-20个字符")
     @Pattern(regexp = "^\\S+$",message = "用户名不能包含空白字符")
