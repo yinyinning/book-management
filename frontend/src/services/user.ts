@@ -28,3 +28,18 @@ export function login(username: string, password: string, captchaId: string, cap
 export function register(username: string, password: string, captchaId: string, captchaCode: string): Promise<void> {
   return request.post('/user/register', { username, password, captchaId, captchaCode })
 }
+
+//登出：PUT /api/user/logout
+export function logout(): Promise<void> {
+  return request.put('/user/logout')
+}
+
+//更新用户名：PUT /api/user/name
+export function updateUsername(username: string): Promise<boolean> {
+  return request.put('/user/name', { username })
+}
+
+//更新密码：PUT /api/user/password
+export function updatePassword(oldPassword: string, newPassword: string): Promise<boolean> {
+  return request.put('/user/password', { oldPassword, newPassword })
+}

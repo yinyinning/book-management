@@ -6,9 +6,41 @@ const router= createRouter({
     routes: [
         {
             path: '/',
-            name: 'Home',
-            component: () => import('@/views/HomeView.vue'),
+            component: () => import('@/components/Navi.vue'),
             meta: { requiresAuth: true }, // 添加需要登录的标记
+            redirect: '/home',
+            children: [
+                {
+                    path: 'home',
+                    name: 'Home',
+                    component: () => import('@/views/HomeView.vue'),
+                },
+                {
+                    path: 'books',
+                    name: 'Books',
+                    component: () => import('@/views/BookView.vue'),
+                },
+                {
+                    path: 'borrow',
+                    name: 'Borrow',
+                    component: () => import('@/views/BorrowView.vue'),
+                },
+                {
+                    path: 'profile',
+                    name: 'Profile',
+                    component: () => import('@/views/ProfileView.vue'),
+                },
+                {
+                    path: 'profile/name',
+                    name: 'Name',
+                    component: () => import('@/views/ProfileNameView.vue'),
+                },
+                {
+                    path: 'profile/password',
+                    name: 'Password',
+                    component: () => import('@/views/ProfilePasswordView.vue'),
+                },
+            ]
         },
         {
             path: '/login',
