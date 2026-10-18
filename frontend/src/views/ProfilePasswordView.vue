@@ -6,13 +6,13 @@
                 <p>更改密码</p>
             </el-form-item>
             <el-form-item label="旧密码">
-                <el-input v-model="oldPassword" type="password" placeholder="请输入现密码" />
+                <el-input v-model="oldPassword" type="password" show-password placeholder="请输入现密码" />
             </el-form-item>
             <el-form-item label="新密码">
-                <el-input v-model="newPassword" type="password" placeholder="请输入新密码" />
+                <el-input v-model="newPassword" type="password" show-password placeholder="请输入新密码" />
             </el-form-item>
             <el-form-item label="确认新密码">
-                <el-input v-model="confirmPassword" type="password" placeholder="请再次输入新密码" />
+                <el-input v-model="confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="onSubmit">确认</el-button>

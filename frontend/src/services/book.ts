@@ -24,11 +24,4 @@ export function updateBook(data: Omit<Book, 'types'>): Promise<boolean> {
 //删除图书：DELETE /api/book/{id}
 export function deleteBook(id: number): Promise<boolean> {
   return request.delete(`/book/${id}`) as any
-  
-export interface BookResult {
-    id: number;
-    isbn: string;
-    title: string;
-    publisher:string;
-    author: string;
 }

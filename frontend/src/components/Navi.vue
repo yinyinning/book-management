@@ -6,6 +6,7 @@
         <el-menu-item index="/books">图书浏览</el-menu-item>
         <el-menu-item index="/borrow">我的借阅</el-menu-item>
         <el-menu-item index="/profile">个人中心</el-menu-item>
+        <el-menu-item index="/users" v-if="authStore.role>=1">用户管理</el-menu-item>
       </el-menu>
       <el-dropdown @command="handleCommand">
         <el-avatar>{{ authStore.username.charAt(0) }}</el-avatar>

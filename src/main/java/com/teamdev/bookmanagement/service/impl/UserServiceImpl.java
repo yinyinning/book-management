@@ -1,6 +1,7 @@
 package com.teamdev.bookmanagement.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -49,7 +50,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void register(RegisterRequest registerRequest) {
+    public void register(RegisterRequest registerRequest,int role) {
+        if(role==2){
+            throw new BusinessException(403,"无创建超级管理员的权限");
+        }
         String captchaKey= CacheKeys.CAPTCHA_PREFIX+registerRequest.getCaptchaId();
         String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
         stringRedisTemplate.delete(captchaKey);
@@ -59,9 +63,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
             throw new BusinessException(400,"用户名已存在");
         }
-        User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(0).status(1).build();
+        if (lambdaQuery().eq(User::getEmail,registerRequest.getEmail()).exists()){
+            throw new BusinessException(400,"邮箱已被注册");
+        }
+        User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(role).status(1).email(registerRequest.getEmail()).build();
         save(user);
-        log.info("用户{}注册成功",user.getUsername());
+        log.info("{}{}注册成功",role==0?"用户":"管理员",user.getUsername());
+    }
+
+    @Override
+    public Boolean deleteById(Long id){
+        User adminUser=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(404,"进行删除用户操作的用户不存在"));
+        User user=getOptById(id).orElseThrow(()->new BusinessException(404,"要删除的用户不存在"));
+        if(adminUser.getRole()<=user.getRole()){
+            throw new BusinessException(403,"无权限删除此用户");
+        }
+        boolean success=removeById(id);
+        StpUtil.kickout(id);
+        log.info("用户{}删除用户{}{}",adminUser.getUsername(),user.getUsername(),success?"成功":"失败");
+        return success;
     }
 
     @Override
@@ -179,7 +199,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     private UserResponse toResponse(User user){
-        return UserResponse.builder().id(user.getId()).username(user.getUsername()).status(user.getStatus()).role(user.getRole()).createTime(user.getCreateTime()).updateTime(user.getUpdateTime()).build();
+        return UserResponse.builder().id(user.getId()).username(user.getUsername()).status(user.getStatus()).role(user.getRole()).createTime(user.getCreateTime()).updateTime(user.getUpdateTime()).email(user.getEmail()).build();
     }
 
     @Override
@@ -195,6 +215,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (id==StpUtil.getLoginIdAsLong()){
             throw new BusinessException(400,"管理员不能操作自己");
         }
+        if(adminUser.getRole()<=user.getRole()){
+            throw new BusinessException(403,"状态更新操作无权限");
+        }
         boolean success=update(new LambdaUpdateWrapper<User>().set(User::getStatus,updateUserStatusRequest.getStatus()).eq(User::getId,id));
         if (success){
             if (updateUserStatusRequest.getStatus()==0) {
@@ -204,6 +227,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         return success;
     }
+
     @Override
     public Boolean updateUserRole(Long id, UpdateUserRoleRequest request){
         User user=lambdaQuery().eq(User::getId,id).one();
@@ -234,6 +258,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // role=0/1:立即生效
         return update(new LambdaUpdateWrapper<User>().set(User::getRole,request.getRole()).eq(User::getId,id));
     }
+
     @Override
     public Boolean cancelTransfer(){
         SuperAdminTransfer transfer = superAdminTransferMapper.selectOne(
@@ -247,5 +272,61 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         transfer.setStatus(2);
         superAdminTransferMapper.updateById(transfer);
         return true;
+    }
+
+    @Override
+    public Boolean sendResetCode(SendEmailCodeRequest sendEmailCodeRequest){
+        String captchaKey=CacheKeys.CAPTCHA_PREFIX+sendEmailCodeRequest.getCaptchaId();
+        String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
+        stringRedisTemplate.delete(captchaKey);
+        if (captchaCode==null||!captchaCode.equalsIgnoreCase(sendEmailCodeRequest.getCaptchaCode())){
+            throw new BusinessException(400,"验证码错误或过期");
+        }
+        String cdEmailKey=CacheKeys.EMAIL_CD_PREFIX+sendEmailCodeRequest.getEmail();
+        Boolean isFirstSend=stringRedisTemplate.opsForValue().setIfAbsent(cdEmailKey,"1",60,TimeUnit.SECONDS);
+        if (!Boolean.TRUE.equals(isFirstSend)){
+            throw new BusinessException(429,"发送太频繁，请60秒后再试");
+        }
+        String email=sendEmailCodeRequest.getEmail();
+        if(!lambdaQuery().eq(User::getEmail,email).exists()){
+            return true;
+        }
+        String emailCode= RandomUtil.randomNumbers(6);
+        String failKey=CacheKeys.EMAIL_FAIL_PREFIX+email;
+        stringRedisTemplate.delete(failKey);
+        stringRedisTemplate.opsForValue().set(CacheKeys.EMAIL_CODE_PREFIX+sendEmailCodeRequest.getEmail(),emailCode,5,TimeUnit.MINUTES);
+        log.info("重置密码验证码：{}，收件邮箱：{}",emailCode,sendEmailCodeRequest.getEmail());
+        return true;
+    }
+
+    @Override
+    public Boolean resetPasswordByEmail(EmailResetPasswordRequest emailResetPasswordRequest) {
+        String captchaKey = CacheKeys.CAPTCHA_PREFIX + emailResetPasswordRequest.getCaptchaId();
+        String captchaCode = stringRedisTemplate.opsForValue().get(captchaKey);
+        stringRedisTemplate.delete(captchaKey);
+        if (captchaCode == null || !captchaCode.equalsIgnoreCase(emailResetPasswordRequest.getCaptchaCode())) {
+            throw new BusinessException(400, "验证码错误或过期");
+        }
+        String email = emailResetPasswordRequest.getEmail();
+        String failKey = CacheKeys.EMAIL_FAIL_PREFIX + email;
+        String emailCodeKey=CacheKeys.EMAIL_CODE_PREFIX+email;
+        String failStr = stringRedisTemplate.opsForValue().get(failKey);
+        int failCount = failStr == null ? 0 : Integer.parseInt(failStr);
+        if (failCount>=3){
+            stringRedisTemplate.delete(emailCodeKey);
+            stringRedisTemplate.delete(failKey);
+            throw new BusinessException(429,"验证码错误次数过多，请重新获取");
+        }
+        String emailCode=stringRedisTemplate.opsForValue().get(emailCodeKey);
+        if (emailCode==null||!emailCode.equals(emailResetPasswordRequest.getEmailCode())){
+            stringRedisTemplate.opsForValue().increment(failKey);
+            stringRedisTemplate.expire(failKey,5,TimeUnit.MINUTES);
+            throw new BusinessException(400,"邮箱验证码错误");
+        }
+        stringRedisTemplate.delete(emailCodeKey);
+        stringRedisTemplate.delete(failKey);
+        boolean success=lambdaUpdate().eq(User::getEmail,email).set(User::getPassword,passwordEncoder.encode(emailResetPasswordRequest.getNewPassword())).update();
+        log.info("绑定邮箱为{}的用户重置密码{}",email,success?"成功":"失败");
+        return success;
     }
 }

@@ -3,6 +3,7 @@ export interface BookType{
     id:number
     name:string
 }
+
 // 一本书（对应后端 BookResponse）
 export interface Book{
     id:number
@@ -12,6 +13,7 @@ export interface Book{
     publisher:string
     types:BookType[]
 }
+
 // 分页结果（对应后端 PageResponse<T>）
 export interface PageResult<T>{
     records:T[]
