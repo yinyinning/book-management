@@ -10,8 +10,10 @@ CREATE TABLE `user` (
 `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1=正常，0=禁用',
 `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+`email` VARCHAR(100) NOT NULL COMMENT '用户绑定邮箱',
 PRIMARY KEY (`id`),
-UNIQUE KEY `uk_username` (`username`)
+UNIQUE KEY `uk_username` (`username`),
+UNIQUE KEY `uk_email` (`email`),
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '用户表';
 
 DROP TABLE IF EXISTS `book`;

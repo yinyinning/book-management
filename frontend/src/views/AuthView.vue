@@ -10,12 +10,13 @@
                 <el-input v-model="username" placeholder="请输入用户名" />
             </el-form-item>
             <el-form-item>
-                <el-input v-model="password" type="password" placeholder="请输入密码" />
+                <el-input v-model="password" type="password" show-password placeholder="请输入密码" />
             </el-form-item>
             <el-form-item>
               <div class="captcha-row">
                 <el-input v-model="captchaCode" placeholder="请输入验证码" />
                 <img class="captcha-img" :src="captchaImage" @click="refreshCaptcha" alt="验证码" v-if="captchaImage" />
+                <el-button @click="refreshCaptcha" v-else>重试</el-button>
               </div>
             </el-form-item>
             <el-form-item>

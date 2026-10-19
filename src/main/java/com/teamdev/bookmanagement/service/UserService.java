@@ -12,7 +12,8 @@ import java.util.List;
  * 继承 IService<User> 得到 save / list / getById / removeById 等更上层的方法(带批量、分页等)。
  */
 public interface UserService extends IService<User> {
-    void register(RegisterRequest registerRequest);
+    void register(RegisterRequest registerRequest,int role);
+    Boolean deleteById(Long id);
     LoginResponse login(LoginRequest loginRequest);
     Boolean helpResetPassword(Long id);
     Boolean updateUserName(UpdateUserNameRequest updateUserNameRequest);
@@ -22,4 +23,6 @@ public interface UserService extends IService<User> {
     Boolean updateUserStatus(Long id, UpdateUserStatusRequest updateUserStatusRequest);
     Boolean updateUserRole(Long id, UpdateUserRoleRequest request);
     Boolean cancelTransfer();
+    Boolean sendResetCode(SendEmailCodeRequest sendEmailCodeRequest);
+    Boolean resetPasswordByEmail(EmailResetPasswordRequest emailResetPasswordRequest);
 }

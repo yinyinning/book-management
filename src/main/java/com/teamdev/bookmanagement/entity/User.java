@@ -39,4 +39,6 @@ public class User {
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;
+    /** 用户绑定邮箱 */
+    private String email;
 }
