@@ -22,7 +22,8 @@ public class RegisterRequest {
     @ValidPassword
     @Pattern(regexp = "^[A-Za-z0-9!@#$%^&*()]+$",message = "密码只能包含大写字母、小写字母、数字和!@#$%^&*()")
     private String password;
-    @NotBlank(message = "邮箱不能为空")
     @Email(message = "邮箱格式不正确")
     private String email;
+    @Pattern(regexp = "^\\d{6}$",message = "验证码应当是6位数字")
+    private String emailCode;
 }

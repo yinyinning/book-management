@@ -14,7 +14,9 @@ import com.teamdev.bookmanagement.entity.SuperAdminTransfer;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.SuperAdminTransferMapper;
 import com.teamdev.bookmanagement.mapper.UserMapper;
+import com.teamdev.bookmanagement.service.MailService;
 import com.teamdev.bookmanagement.service.UserService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -32,6 +34,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     @Value("${app.admin.username}")
     private String adminUsername;
@@ -40,14 +43,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final BCryptPasswordEncoder passwordEncoder;
     private final StringRedisTemplate stringRedisTemplate;
     private final SuperAdminTransferMapper superAdminTransferMapper;
+    private final MailService mailService;
     private static final int MAX_FAIL_COUNT=5;
     private static final int LOCK_MINUTES=5;
-    public UserServiceImpl(BCryptPasswordEncoder bCryptPasswordEncoder, StringRedisTemplate stringRedisTemplate,
-                           SuperAdminTransferMapper superAdminTransferMapper){
-        passwordEncoder=bCryptPasswordEncoder;
-        this.stringRedisTemplate=stringRedisTemplate;
-        this.superAdminTransferMapper=superAdminTransferMapper;
-    }
 
     @Override
     public void register(RegisterRequest registerRequest,int role) {
@@ -63,8 +61,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
             throw new BusinessException(400,"用户名已存在");
         }
-        if (lambdaQuery().eq(User::getEmail,registerRequest.getEmail()).exists()){
-            throw new BusinessException(400,"邮箱已被注册");
+        if (registerRequest.getEmail()!=null&&!registerRequest.getEmail().isBlank()){
+            if (lambdaQuery().eq(User::getEmail,registerRequest.getEmail()).exists()) {
+                throw new BusinessException(400, "邮箱已被注册");
+            }
+            doCheckEmailCode(registerRequest.getEmailCode(), registerRequest.getEmail(), CacheKeys.EMAIL_BINDING_CODE_PREFIX, CacheKeys.EMAIL_BINDING_FAIL_PREFIX);
         }
         User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(role).status(1).email(registerRequest.getEmail()).build();
         save(user);
@@ -115,6 +116,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         stringRedisTemplate.delete(failKey);
         log.info("用户{}登录成功",user.getUsername());
         return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).build();
+    }
+
+    @Override
+    public LoginResponse emailLogin(EmailLoginRequest emailLoginRequest){
+        String email=emailLoginRequest.getEmail();
+        User user=lambdaQuery().eq(User::getEmail,email).one();
+        if (user==null){
+            throw new BusinessException(404,"邮箱地址或密码错误");
+        }
+        return login(LoginRequest.builder().captchaCode(emailLoginRequest.getCaptchaCode()).captchaId(emailLoginRequest.getCaptchaId()).password(emailLoginRequest.getPassword()).username(user.getUsername()).build());
     }
 
     @Override
@@ -279,23 +290,30 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String captchaKey=CacheKeys.CAPTCHA_PREFIX+sendEmailCodeRequest.getCaptchaId();
         String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
         stringRedisTemplate.delete(captchaKey);
-        if (captchaCode==null||!captchaCode.equalsIgnoreCase(sendEmailCodeRequest.getCaptchaCode())){
-            throw new BusinessException(400,"验证码错误或过期");
-        }
-        String cdEmailKey=CacheKeys.EMAIL_CD_PREFIX+sendEmailCodeRequest.getEmail();
-        Boolean isFirstSend=stringRedisTemplate.opsForValue().setIfAbsent(cdEmailKey,"1",60,TimeUnit.SECONDS);
-        if (!Boolean.TRUE.equals(isFirstSend)){
-            throw new BusinessException(429,"发送太频繁，请60秒后再试");
+        if (captchaCode==null||!captchaCode.equalsIgnoreCase(sendEmailCodeRequest.getCaptchaCode())) {
+            throw new BusinessException(400, "验证码错误或过期");
         }
         String email=sendEmailCodeRequest.getEmail();
         if(!lambdaQuery().eq(User::getEmail,email).exists()){
             return true;
         }
-        String emailCode= RandomUtil.randomNumbers(6);
-        String failKey=CacheKeys.EMAIL_FAIL_PREFIX+email;
-        stringRedisTemplate.delete(failKey);
-        stringRedisTemplate.opsForValue().set(CacheKeys.EMAIL_CODE_PREFIX+sendEmailCodeRequest.getEmail(),emailCode,5,TimeUnit.MINUTES);
-        log.info("重置密码验证码：{}，收件邮箱：{}",emailCode,sendEmailCodeRequest.getEmail());
+        doSendEmailCode(email,CacheKeys.EMAIL_CODE_PREFIX,CacheKeys.EMAIL_CD_PREFIX,CacheKeys.EMAIL_FAIL_PREFIX);
+        return true;
+    }
+
+    @Override
+    public Boolean sendBindingCode(SendEmailCodeRequest sendEmailCodeRequest){
+        String captchaKey=CacheKeys.CAPTCHA_PREFIX+sendEmailCodeRequest.getCaptchaId();
+        String captchaCode=stringRedisTemplate.opsForValue().get(captchaKey);
+        stringRedisTemplate.delete(captchaKey);
+        if (captchaCode==null||!captchaCode.equalsIgnoreCase(sendEmailCodeRequest.getCaptchaCode())) {
+            throw new BusinessException(400, "验证码错误或过期");
+        }
+        String email=sendEmailCodeRequest.getEmail();
+        if(lambdaQuery().eq(User::getEmail,email).exists()){
+            throw new BusinessException(400,"邮箱已被占用");
+        }
+        doSendEmailCode(email,CacheKeys.EMAIL_BINDING_CODE_PREFIX,CacheKeys.EMAIL_BINDING_CD_PREFIX,CacheKeys.EMAIL_BINDING_FAIL_PREFIX);
         return true;
     }
 
@@ -307,26 +325,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (captchaCode == null || !captchaCode.equalsIgnoreCase(emailResetPasswordRequest.getCaptchaCode())) {
             throw new BusinessException(400, "验证码错误或过期");
         }
-        String email = emailResetPasswordRequest.getEmail();
-        String failKey = CacheKeys.EMAIL_FAIL_PREFIX + email;
-        String emailCodeKey=CacheKeys.EMAIL_CODE_PREFIX+email;
-        String failStr = stringRedisTemplate.opsForValue().get(failKey);
-        int failCount = failStr == null ? 0 : Integer.parseInt(failStr);
+        String email=emailResetPasswordRequest.getEmail();
+        doCheckEmailCode(emailResetPasswordRequest.getEmailCode(),email,CacheKeys.EMAIL_CODE_PREFIX,CacheKeys.EMAIL_FAIL_PREFIX);
+        boolean success=lambdaUpdate().eq(User::getEmail,email).set(User::getPassword,passwordEncoder.encode(emailResetPasswordRequest.getNewPassword())).update();
+        log.info("绑定邮箱为{}的用户重置密码{}",email,success?"成功":"失败");
+        return success;
+    }
+
+    @Override
+    public Boolean bindingEmailByEmail(EmailBindingRequest emailBindingRequest){
+        String email= emailBindingRequest.getEmail();
+        if (lambdaQuery().eq(User::getEmail,email).exists()){
+            throw new BusinessException(400,"邮箱已被占用");
+        }
+        doCheckEmailCode(emailBindingRequest.getEmailCode(),email,CacheKeys.EMAIL_BINDING_CODE_PREFIX,CacheKeys.EMAIL_BINDING_FAIL_PREFIX);
+        User user=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(404,"意外错误，进行绑定邮箱操作的用户不存在"));
+        boolean success=lambdaUpdate().eq(User::getId,StpUtil.getLoginIdAsLong()).set(User::getEmail,email).update();
+        log.info("用户[{}]{}绑定邮箱{}{}",StpUtil.getLoginIdAsLong(),user.getUsername(),email,success?"成功":"失败");
+        return success;
+    }
+
+    private void doSendEmailCode(String email,String codePrefix,String cdPrefix,String failPrefix){
+        String cdEmailKey=cdPrefix+email;
+        Boolean isFirstSend=stringRedisTemplate.opsForValue().setIfAbsent(cdEmailKey,"1",60,TimeUnit.SECONDS);
+        if (!Boolean.TRUE.equals(isFirstSend)){
+            throw new BusinessException(429,"发送太频繁，请60秒后重试");
+        }
+        String emailCode=RandomUtil.randomNumbers(6);
+        String failKey=failPrefix+email;
+        stringRedisTemplate.delete(failKey);
+        String emailCodeKey=codePrefix+email;
+        stringRedisTemplate.opsForValue().set(emailCodeKey,emailCode,5,TimeUnit.MINUTES);
+        mailService.send(email,"图书管理系统验证码","您的验证码为："+emailCode);
+        log.info("向邮箱{}发送邮件成功",email);
+    }
+
+    private void doCheckEmailCode(String emailCode,String email,String codePrefix,String failPrefix){
+        String failKey=failPrefix+email;
+        String failStr=stringRedisTemplate.opsForValue().get(failKey);
+        String codeKey=codePrefix+email;
+        int failCount=failStr==null?0:Integer.parseInt(failStr);
         if (failCount>=3){
-            stringRedisTemplate.delete(emailCodeKey);
+            stringRedisTemplate.delete(codeKey);
             stringRedisTemplate.delete(failKey);
             throw new BusinessException(429,"验证码错误次数过多，请重新获取");
         }
-        String emailCode=stringRedisTemplate.opsForValue().get(emailCodeKey);
-        if (emailCode==null||!emailCode.equals(emailResetPasswordRequest.getEmailCode())){
+        String code=stringRedisTemplate.opsForValue().get(codeKey);
+        if (code==null||!code.equals(emailCode)){
             stringRedisTemplate.opsForValue().increment(failKey);
             stringRedisTemplate.expire(failKey,5,TimeUnit.MINUTES);
             throw new BusinessException(400,"邮箱验证码错误");
         }
-        stringRedisTemplate.delete(emailCodeKey);
+        stringRedisTemplate.delete(codeKey);
         stringRedisTemplate.delete(failKey);
-        boolean success=lambdaUpdate().eq(User::getEmail,email).set(User::getPassword,passwordEncoder.encode(emailResetPasswordRequest.getNewPassword())).update();
-        log.info("绑定邮箱为{}的用户重置密码{}",email,success?"成功":"失败");
-        return success;
+        log.info("邮箱{}检验验证码成功",email);
     }
 }

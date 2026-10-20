@@ -7,10 +7,13 @@
         </el-radio-group>
         <el-form v-keyboard-nav="onSubmit">
             <el-form-item>
-                <el-input v-model="username" placeholder="请输入用户名" />
+              <el-input v-model="username" placeholder="请输入用户名" />
             </el-form-item>
             <el-form-item>
-                <el-input v-model="password" type="password" show-password placeholder="请输入密码" />
+              <el-input v-model="password" type="password" show-password placeholder="请输入密码" />
+            </el-form-item>
+            <el-form-item v-if="mode==='register'">
+              <el-input v-model="email" placeholder="请输入邮箱" />
             </el-form-item>
             <el-form-item>
               <div class="captcha-row">
@@ -43,11 +46,13 @@ const mode = ref<'login' | 'register'>('login')
 const captchaId=ref('')
 const captchaCode=ref('')
 const captchaImage=ref('')
+const email=ref('')
 
 watch(mode, () => {
     username.value = ''
     password.value = ''
     captchaCode.value = ''
+    email.value=''
     refreshCaptcha()
 })
 
@@ -63,7 +68,7 @@ async function onLogin() {
 
 async function onRegister() {
   try {
-    await register(username.value, password.value, captchaId.value, captchaCode.value)
+    await register(username.value, password.value, captchaId.value, captchaCode.value, email.value)
     ElMessage.success('注册成功，请登录')
     mode.value = 'login'
   } catch {

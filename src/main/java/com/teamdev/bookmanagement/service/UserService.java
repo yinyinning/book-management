@@ -15,6 +15,7 @@ public interface UserService extends IService<User> {
     void register(RegisterRequest registerRequest,int role);
     Boolean deleteById(Long id);
     LoginResponse login(LoginRequest loginRequest);
+    LoginResponse emailLogin(EmailLoginRequest emailLoginRequest);
     Boolean helpResetPassword(Long id);
     Boolean updateUserName(UpdateUserNameRequest updateUserNameRequest);
     Boolean updateUserPassword(UpdateUserPasswordRequest updateUserPasswordRequest);
@@ -25,4 +26,6 @@ public interface UserService extends IService<User> {
     Boolean cancelTransfer();
     Boolean sendResetCode(SendEmailCodeRequest sendEmailCodeRequest);
     Boolean resetPasswordByEmail(EmailResetPasswordRequest emailResetPasswordRequest);
+    Boolean sendBindingCode(SendEmailCodeRequest sendEmailCodeRequest);
+    Boolean bindingEmailByEmail(EmailBindingRequest emailBindingRequest);
 }

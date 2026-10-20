@@ -2,9 +2,11 @@ package com.teamdev.bookmanagement.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
 public class LoginRequest {
     @NotBlank(message = "验证码标识不能为空")
     private String captchaId;

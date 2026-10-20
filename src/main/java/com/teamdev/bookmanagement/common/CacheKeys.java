@@ -8,4 +8,7 @@ public class CacheKeys {
     public static final String EMAIL_CODE_PREFIX="email:code:";
     public static final String EMAIL_CD_PREFIX="email:cd:";
     public static final String EMAIL_FAIL_PREFIX="email:fail:";
+    public static final String EMAIL_BINDING_CODE_PREFIX="email:binding:code:";
+    public static final String EMAIL_BINDING_CD_PREFIX="email:binding:cd:";
+    public static final String EMAIL_BINDING_FAIL_PREFIX="email:binding:fail:";
 }

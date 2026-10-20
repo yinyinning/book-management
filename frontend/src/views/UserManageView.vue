@@ -6,6 +6,7 @@
     <el-table :data="users">
         <el-table-column prop="id" label="用户ID"/>
         <el-table-column prop="username" label="用户名"/>
+        <el-table-column prop="email" label="邮箱"/>
         <el-table-column label="角色">
             <template #default="scope">{{ getRoleText(scope.row.role) }}</template>
         </el-table-column>
