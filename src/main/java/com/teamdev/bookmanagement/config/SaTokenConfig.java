@@ -18,7 +18,7 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry){
-        registry.addInterceptor(new SaInterceptor(handle-> checkLoginAndStatus())).addPathPatterns("/**").excludePathPatterns("/api/user/login","/api/user/register","/api/captcha","/api/user/password/send/email-code","/api/user/password/reset");
+        registry.addInterceptor(new SaInterceptor(handle-> checkLoginAndStatus())).addPathPatterns("/**").excludePathPatterns("/api/user/login","/api/user/email/login","/api/user/register","/api/captcha","/api/user/password/send/email-code","/api/user/password/reset","/api/user/binding/send/email-code");
     }
     private void checkLoginAndStatus(){
         StpUtil.checkLogin();

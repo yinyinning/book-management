@@ -22,6 +22,7 @@ export interface UserResult {
   status: number
   createTime: string
   updateTime: string
+  email: string
 }
 
 //获取验证码：GET /api/captcha
@@ -35,8 +36,8 @@ export function login(username: string, password: string, captchaId: string, cap
 }
 
 //注册：POST /api/user/register
-export function register(username: string, password: string, captchaId: string, captchaCode: string): Promise<void> {
-  return request.post('/user/register', { username, password, captchaId, captchaCode })
+export function register(username: string, password: string, captchaId: string, captchaCode: string, email: string): Promise<void> {
+  return request.post('/user/register', { username, password, captchaId, captchaCode, email })
 }
 
 //登出：PUT /api/user/logout
@@ -83,3 +84,5 @@ export function resetUserPassword(id: number): Promise<boolean> {
 export function registerAdmin(username: string, password: string, captchaId: string, captchaCode: string): Promise<void> {
   return request.post('/user/register/admin', {username, password, captchaId, captchaCode})
 }
+
+//请求向特定邮箱发送邮件： 

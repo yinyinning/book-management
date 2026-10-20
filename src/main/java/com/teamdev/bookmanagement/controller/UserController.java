@@ -93,13 +93,19 @@ public class UserController {
         return Result.success();
     }
 
-    /** 登录: POST /api/user/login*/
+    /** 普通用户名登录: POST /api/user/login */
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest){
         return Result.success(userService.login(loginRequest));
     }
 
-    /** 用户退出登录: PUT /api/user/logout*/
+    /** 邮箱地址登录: POST /api/user/email/login */
+    @PostMapping("/email/login")
+    public Result<LoginResponse> emailLogin(@RequestBody @Valid EmailLoginRequest emailLoginRequest){
+        return Result.success(userService.emailLogin(emailLoginRequest));
+    }
+
+    /** 用户退出登录: PUT /api/user/logout */
     @PutMapping("/logout")
     public Result<Void> logout(){
         StpUtil.logout();
@@ -107,15 +113,27 @@ public class UserController {
     }
 
     /** 用户未登录状态重置密码操作的发送验证码请求: POST  /api/user/password/send/email-code */
-    @PostMapping("password/send/email-code")
+    @PostMapping("/password/send/email-code")
     public Result<Boolean> sendEmailCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
         return Result.success(userService.sendResetCode(sendEmailCodeRequest));
     }
 
+    /** 用户注册时或登录后在个人中心时绑定邮箱操作的发送验证码请求: POST  /api/user/binding/send/email-code */
+    @PostMapping("/binding/send/email-code")
+    public Result<Boolean> sendBindingCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
+        return Result.success(userService.sendBindingCode(sendEmailCodeRequest));
+    }
+
     /** 用户未登录状态重置密码操作的验证码校验: POST /api/user/password/reset */
-    @PostMapping("password/reset")
+    @PostMapping("/password/reset")
     public Result<Boolean> resetPasswordByEmail(@RequestBody @Valid EmailResetPasswordRequest emailResetPasswordRequest){
         return Result.success(userService.resetPasswordByEmail(emailResetPasswordRequest));
+    }
+
+    /** 用户登录后在个人中心绑定邮箱的验证码检验: POST /api/user/binding/email */
+    @PostMapping("/binding/email")
+    public Result<Boolean> bindingEmailByEmail(@RequestBody @Valid EmailBindingRequest emailBindingRequest){
+        return Result.success(userService.bindingEmailByEmail(emailBindingRequest));
     }
 
     /** 管理员提拔: PUT /api/user/{id}/role */
