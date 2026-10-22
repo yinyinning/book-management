@@ -7,13 +7,20 @@
         </el-radio-group>
         <el-form v-keyboard-nav="onSubmit">
             <el-form-item>
-              <el-input v-model="username" placeholder="请输入用户名" />
+              <el-input v-model="username" v-if="mode==='login' && loginMode==='userLogin' || mode==='register'" placeholder="请输入用户名" />
+              <el-input v-model="email" v-if="mode==='login' && loginMode==='emailLogin'" placeholder="请输入邮箱" />
             </el-form-item>
             <el-form-item>
               <el-input v-model="password" type="password" show-password placeholder="请输入密码" />
             </el-form-item>
             <el-form-item v-if="mode==='register'">
-              <el-input v-model="email" placeholder="请输入邮箱" />
+              <el-input v-model="email" placeholder="请输入邮箱（选填，用于找回密码）" />
+            </el-form-item>
+            <el-form-item v-if="mode==='register' && email">
+              <div class="code-row">
+                <el-input v-model="emailCode" placeholder="邮箱验证码"></el-input>
+                <el-button @click="sendCode" :disabled="countdown>0">{{ countdown>0 ? countdown+'s' : '获取验证码' }}</el-button>
+              </div>
             </el-form-item>
             <el-form-item>
               <div class="captcha-row">
@@ -24,7 +31,10 @@
             </el-form-item>
             <el-form-item>
                 <el-button type="primary" @click="onLogin" v-if="mode === 'login'">登录</el-button>
-                <el-button type="primary" @click="onRegister" v-else>注册</el-button>
+                <el-button link type="primary" v-if="mode==='login'" @click="router.push('/forgot-password')">忘记密码？</el-button>
+                <el-button link type="primary" v-if="mode==='login' && loginMode==='userLogin'" @click="loginMode='emailLogin'">邮箱登录？</el-button>
+                <el-button link type="primary" v-if="mode==='login' && loginMode==='emailLogin'" @click="loginMode='userLogin'">用户名登录？</el-button>
+                <el-button type="primary" @click="onRegister" v-if="mode==='register'">注册</el-button>
             </el-form-item>
         </el-form>
       </div>
@@ -32,33 +42,43 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
-import { register, getCaptcha } from '@/services/user'
+import { register, getCaptcha, sendBindingCode } from '@/services/user'
 
 const username = ref('')
 const password = ref('')
 const router = useRouter()
 const authStore = useAuthStore()
 const mode = ref<'login' | 'register'>('login')
+const loginMode = ref<'userLogin' | 'emailLogin'>('userLogin')
 const captchaId=ref('')
 const captchaCode=ref('')
 const captchaImage=ref('')
-const email=ref('')
+const email=ref<string | null>(null)
+const emailCode=ref('')
+const countdown=ref(0)
+let timer: number | null = null
 
 watch(mode, () => {
     username.value = ''
     password.value = ''
     captchaCode.value = ''
-    email.value=''
+    email.value=null
+    emailCode.value=''
+    if(timer){
+      window.clearInterval(timer)
+      timer=null
+    }
+    countdown.value=0
     refreshCaptcha()
 })
 
 async function onLogin() {
   try {
-    await authStore.doLogin(username.value, password.value, captchaId.value, captchaCode.value)
+    await authStore.doLogin(username.value, password.value, captchaId.value, captchaCode.value, loginMode.value, email.value)
     ElMessage.success('登录成功')
     router.push('/')
   } catch {
@@ -68,7 +88,7 @@ async function onLogin() {
 
 async function onRegister() {
   try {
-    await register(username.value, password.value, captchaId.value, captchaCode.value, email.value)
+    await register(username.value, password.value, captchaId.value, captchaCode.value, email.value, emailCode.value)
     ElMessage.success('注册成功，请登录')
     mode.value = 'login'
   } catch {
@@ -77,10 +97,21 @@ async function onRegister() {
 }
 
 async function refreshCaptcha() {
-    const response = await getCaptcha()
-    captchaId.value = response.captchaId
-    captchaImage.value = response.image
-    captchaCode.value = ''
+  const response = await getCaptcha()
+  captchaId.value = response.captchaId
+  captchaImage.value = response.image
+  captchaCode.value = ''
+}
+
+async function sendCode() {
+  try{
+    await sendBindingCode(captchaId.value, captchaCode.value, email.value)
+    ElMessage.success('验证码发送成功')
+    startCount()
+    refreshCaptcha()
+  }catch{
+    refreshCaptcha()
+  }
 }
 
 function onSubmit(){
@@ -91,10 +122,26 @@ function onSubmit(){
   }
 }
 
+function startCount(){
+  countdown.value=60
+  timer=window.setInterval(()=>{
+    countdown.value--
+    if(countdown.value<=0){
+      window.clearInterval(timer!)
+      timer=null
+    }
+  },1000)
+}
+
 onMounted(() => {
-    refreshCaptcha()
+  refreshCaptcha()
 })
 
+onUnmounted(()=>{
+  if(timer){
+    window.clearInterval(timer)
+  }
+})
 </script>
 
 <style scoped>

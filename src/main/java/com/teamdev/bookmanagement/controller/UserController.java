@@ -114,7 +114,7 @@ public class UserController {
 
     /** 用户未登录状态重置密码操作的发送验证码请求: POST  /api/user/password/send/email-code */
     @PostMapping("/password/send/email-code")
-    public Result<Boolean> sendEmailCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
+    public Result<Boolean> sendResetCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
         return Result.success(userService.sendResetCode(sendEmailCodeRequest));
     }
 

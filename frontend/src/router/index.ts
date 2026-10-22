@@ -41,6 +41,11 @@ const router= createRouter({
                     component: () => import('@/views/ProfilePasswordView.vue'),
                 },
                 {
+                    path: 'profile/email',
+                    name: 'Email',
+                    component: () => import('@/views/ProfileEmailView.vue'),
+                },
+                {
                     path: 'users',
                     name: 'Users',
                     component: () => import('@/views/UserManageView.vue'),
@@ -57,6 +62,12 @@ const router= createRouter({
             name: 'Login',
             component: () => import('@/views/AuthView.vue'),
             meta: { requiresAuth: false }, // 登录页面不需要登录
+        },
+        {
+            path: '/forgot-password',
+            name: 'ForgotPassword',
+            component: () => import('@/views/ForgotPasswordView.vue'),
+            meta: { requiresAuth: false },
         },
     ]
 })
