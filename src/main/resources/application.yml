@@ -6,12 +6,22 @@ spring:
     username: root
     # 密码从环境变量 MDB_PASSWORD 读取，不写死在仓库里
     password: ${MDB_PASSWORD}
-
   data:
     redis:
       host: localhost
       port: 6379
       password: ${RDB_PASSWORD}
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: ${MY_QQ_MAIL_ADDRESS}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
 
 mybatis-plus:
   configuration:

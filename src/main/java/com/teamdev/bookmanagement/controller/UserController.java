@@ -40,7 +40,7 @@ public class UserController {
         return Result.success(userService.listUsers());
     }
 
-    /** 管理员禁用/启用用户:PUT /api/user/{id}/status */
+    /** 管理员禁用/启用用户:PUT /api/user/{id}/status 要求操作者role大于被操作者*/
     @PutMapping("/{id}/status")
     @SaCheckRole("admin")
     public Result<Boolean> updateUserStatus(@PathVariable Long id, @RequestBody @Valid UpdateUserStatusRequest updateUserStatusRequest){
@@ -51,10 +51,10 @@ public class UserController {
     @DeleteMapping("/{id}")
     @SaCheckRole("admin")
     public Result<Boolean> delete(@PathVariable Long id) {
-        return Result.success(userService.removeById(id));
+        return Result.success(userService.deleteById(id));
     }
 
-    /** 管理员重置密码:PUT /api/user/help/password*///会登出，重新登录
+    /** 管理员重置密码:PUT /api/user/help/password/{id} *///会登出，重新登录
     @PutMapping("/help/password/{id}")
     @SaCheckRole("admin")
     public Result<Boolean> helpResetPassword(@PathVariable Long id){
@@ -78,32 +78,72 @@ public class UserController {
         return Result.success(result);
     }
 
-    /** 注册普通用户:POST /api/user/register*/
+    /** 注册普通用户:POST /api/user/register */
     @PostMapping("/register")
     public Result<Void> register(@RequestBody @Valid RegisterRequest registerRequest){
-        userService.register(registerRequest);
+        userService.register(registerRequest,0);
         return Result.success();
     }
 
-    /** 登录:POST /api/user/login*/
+    /** 超级管理员注册普通管理员: POST /api/user/register/admin */
+    @PostMapping("/register/admin")
+    @SaCheckRole("super_admin")
+    public Result<Void> registerAdmin(@RequestBody @Valid RegisterRequest registerRequest){
+        userService.register(registerRequest,1);
+        return Result.success();
+    }
+
+    /** 普通用户名登录: POST /api/user/login */
     @PostMapping("/login")
     public Result<LoginResponse> login(@RequestBody @Valid LoginRequest loginRequest){
         return Result.success(userService.login(loginRequest));
     }
 
-    /** 用户退出登录:PUT /api/user/logout*/
+    /** 邮箱地址登录: POST /api/user/email/login */
+    @PostMapping("/email/login")
+    public Result<LoginResponse> emailLogin(@RequestBody @Valid EmailLoginRequest emailLoginRequest){
+        return Result.success(userService.emailLogin(emailLoginRequest));
+    }
+
+    /** 用户退出登录: PUT /api/user/logout */
     @PutMapping("/logout")
     public Result<Void> logout(){
         StpUtil.logout();
         return Result.success();
     }
-    /** 管理员提拔:PUT /api/user/{id}/role */
+
+    /** 用户未登录状态重置密码操作的发送验证码请求: POST  /api/user/password/send/email-code */
+    @PostMapping("/password/send/email-code")
+    public Result<Boolean> sendEmailCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
+        return Result.success(userService.sendResetCode(sendEmailCodeRequest));
+    }
+
+    /** 用户注册时或登录后在个人中心时绑定邮箱操作的发送验证码请求: POST  /api/user/binding/send/email-code */
+    @PostMapping("/binding/send/email-code")
+    public Result<Boolean> sendBindingCode(@RequestBody @Valid SendEmailCodeRequest sendEmailCodeRequest){
+        return Result.success(userService.sendBindingCode(sendEmailCodeRequest));
+    }
+
+    /** 用户未登录状态重置密码操作的验证码校验: POST /api/user/password/reset */
+    @PostMapping("/password/reset")
+    public Result<Boolean> resetPasswordByEmail(@RequestBody @Valid EmailResetPasswordRequest emailResetPasswordRequest){
+        return Result.success(userService.resetPasswordByEmail(emailResetPasswordRequest));
+    }
+
+    /** 用户登录后在个人中心绑定邮箱的验证码检验: POST /api/user/binding/email */
+    @PostMapping("/binding/email")
+    public Result<Boolean> bindingEmailByEmail(@RequestBody @Valid EmailBindingRequest emailBindingRequest){
+        return Result.success(userService.bindingEmailByEmail(emailBindingRequest));
+    }
+
+    /** 管理员提拔: PUT /api/user/{id}/role */
     @PutMapping("/{id}/role")
     @SaCheckRole("super_admin")
     public Result<Boolean> updateUserRole(@PathVariable Long id, @RequestBody @Valid UpdateUserRoleRequest updateUserRoleRequest){
         return Result.success(userService.updateUserRole(id,updateUserRoleRequest));
     }
-    /** 取消超级管理员转让:POST /api/user/transfer/cancel */
+
+    /** 取消超级管理员转让: POST /api/user/transfer/cancel */
     @PostMapping("/transfer/cancel")
     @SaCheckRole("super_admin")
     public Result<Boolean> cancelTransfer(){

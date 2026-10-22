@@ -14,4 +14,5 @@ public class UserResponse {
     private Integer status;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
+    private String email;
 }
