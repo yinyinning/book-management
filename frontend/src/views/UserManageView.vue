@@ -3,10 +3,12 @@
         <el-button @click="newUser">新建用户</el-button>
         <el-button @click="newAdmin" v-if="authStore.role===2">新建管理员</el-button>
     </div>
-    <el-table :data="users">
+    <el-table :data="users" @row-contextmenu="onRowMenu">
         <el-table-column prop="id" label="用户ID"/>
         <el-table-column prop="username" label="用户名"/>
-        <el-table-column prop="email" label="邮箱"/>
+        <el-table-column label="邮箱">
+            <template #default="scope">{{ scope.row.email==='' || scope.row.email===null ? '无' : scope.row.email }}</template>
+        </el-table-column>
         <el-table-column label="角色">
             <template #default="scope">{{ getRoleText(scope.row.role) }}</template>
         </el-table-column>
@@ -15,10 +17,11 @@
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间"/>
         <el-table-column prop="updateTime" label="更新时间"/>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="240px">
             <template #default="scope">
-                <el-button @click="toggleStatus(scope.row)">{{ scope.row.status===1? '禁用' : '启用' }}</el-button>
-                <el-button @click="removeUser(scope.row)" type="danger">删除</el-button>
+                <el-button size="small" @click="resetPassword(scope.row)">重置密码</el-button>
+                <el-button size="small" @click="toggleStatus(scope.row)" :type="scope.row.status===1? 'warning' : 'success'">{{ scope.row.status===1? '禁用' : '启用' }}</el-button>
+                <el-button size="small" @click="removeUser(scope.row)" type="danger">删除</el-button>
             </template>
         </el-table-column>
     </el-table>
@@ -42,11 +45,16 @@
             <el-button @click="dialogVisible=false">取消</el-button>
         </template>
     </el-dialog>
+    <div class="row-menu" v-show="menuVisible" :style="{left: menuX+'px', top: menuY+'px'}">
+        <div class="menu-item" @click="handleMenu('reset')">重置密码</div>
+        <div class="menu-item" @click="handleMenu('toggle')">{{ currentRow?.status===1? '禁用' : '启用' }}</div>
+        <div class="menu-item" @click="handleMenu('delete')">删除</div>
+    </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
-import { listUsers, deleteUserById, updateUserStatus, type UserResult, getCaptcha, register, registerAdmin } from '@/services/user'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { listUsers, deleteUserById, updateUserStatus, type UserResult, getCaptcha, register, registerAdmin, resetUserPassword } from '@/services/user'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useAuthStore } from '@/stores/auth'
 
@@ -59,6 +67,10 @@ const captchaCode=ref('')
 const captchaImg=ref('')
 const authStore=useAuthStore()
 const createRole=ref<'user' | 'admin'>('user')
+const menuVisible=ref(false)
+const menuX=ref(0)
+const menuY=ref(0)
+const currentRow=ref<UserResult | null>(null)
 
 function getRoleText(role: number){
     return role===0?"普通用户":role===1?"普通管理员":"超级管理员"
@@ -74,8 +86,35 @@ function newAdmin(){
     dialogVisible.value=true;
     createRole.value='admin'
 }
+function onRowMenu(row: UserResult, _column: any, event: MouseEvent){
+    event.preventDefault()
+    currentRow.value=row
+    menuX.value=event.clientX
+    menuY.value=event.clientY
+    menuVisible.value=true
+}
+function handleMenu(action: string){
+    menuVisible.value=false
+    if(!currentRow.value) return
+    if(action==='reset') resetPassword(currentRow.value)
+    else if(action==='toggle') toggleStatus(currentRow.value)
+    else if(action==='delete') removeUser(currentRow.value)
+}
+function closeMenu(){
+    menuVisible.value=false
+}
+
 async function fetch() {
     users.value=await listUsers()
+}
+async function resetPassword(userResult: UserResult) {
+    try{
+        await ElMessageBox.confirm(`确定重置用户⌈${userResult.username}⌋的密码吗？重置后密码变为默认密码，且该用户会被强制下线`,"提示",{type: 'warning'})
+    }catch{
+        return
+    }
+    await resetUserPassword(userResult.id)
+    ElMessage.success('密码重置成功')
 }
 async function toggleStatus(userResult: UserResult){
     await updateUserStatus(userResult.id, userResult.status===0?1:0)
@@ -115,7 +154,14 @@ async function onSubmit() {
     }
 }
 
-onMounted(()=>{fetch(),refreshCaptcha()})
+onMounted(()=>{
+    fetch()
+    refreshCaptcha()
+    document.addEventListener('click',closeMenu)
+})
+onUnmounted(()=>{
+    document.removeEventListener('click',closeMenu)
+})
 </script>
 
 <style scope>
@@ -128,10 +174,24 @@ onMounted(()=>{fetch(),refreshCaptcha()})
     gap: 8px;
     width: 100%;
 }
-
 .captcha-row img{
     cursor: pointer;
     border-radius: 4px;
+}
+.row-menu {
+    position: fixed;
+    background-color: #fff;
+    border-radius: 6px;
+    padding: 4px 0;
+    z-index: 1000;
+}
+.menu-item {
+    padding: 8px 20px;
+    cursor: pointer;
+    font-size: 14px;
+}
+.menu-item:hover {
+    background-color: #f5f7fa;
 }
 </style>
 

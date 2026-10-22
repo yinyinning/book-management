@@ -61,13 +61,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (adminUsername.equals(registerRequest.getUsername())||lambdaQuery().eq(User::getUsername,registerRequest.getUsername()).exists()){
             throw new BusinessException(400,"用户名已存在");
         }
-        if (registerRequest.getEmail()!=null&&!registerRequest.getEmail().isBlank()){
-            if (lambdaQuery().eq(User::getEmail,registerRequest.getEmail()).exists()) {
+        String email=registerRequest.getEmail();
+        if (email!=null&&email.isBlank()){
+            email=null;
+        }
+        if (email!=null){
+            if (lambdaQuery().eq(User::getEmail,email).exists()) {
                 throw new BusinessException(400, "邮箱已被注册");
             }
             doCheckEmailCode(registerRequest.getEmailCode(), registerRequest.getEmail(), CacheKeys.EMAIL_BINDING_CODE_PREFIX, CacheKeys.EMAIL_BINDING_FAIL_PREFIX);
         }
-        User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(role).status(1).email(registerRequest.getEmail()).build();
+        User user=User.builder().username(registerRequest.getUsername()).password(passwordEncoder.encode(registerRequest.getPassword())).role(role).status(1).email(email).build();
         save(user);
         log.info("{}{}注册成功",role==0?"用户":"管理员",user.getUsername());
     }
@@ -115,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         StpUtil.login(user.getId());
         stringRedisTemplate.delete(failKey);
         log.info("用户{}登录成功",user.getUsername());
-        return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).build();
+        return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).email(user.getEmail()).build();
     }
 
     @Override
@@ -319,12 +323,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean resetPasswordByEmail(EmailResetPasswordRequest emailResetPasswordRequest) {
-        String captchaKey = CacheKeys.CAPTCHA_PREFIX + emailResetPasswordRequest.getCaptchaId();
-        String captchaCode = stringRedisTemplate.opsForValue().get(captchaKey);
-        stringRedisTemplate.delete(captchaKey);
-        if (captchaCode == null || !captchaCode.equalsIgnoreCase(emailResetPasswordRequest.getCaptchaCode())) {
-            throw new BusinessException(400, "验证码错误或过期");
-        }
         String email=emailResetPasswordRequest.getEmail();
         doCheckEmailCode(emailResetPasswordRequest.getEmailCode(),email,CacheKeys.EMAIL_CODE_PREFIX,CacheKeys.EMAIL_FAIL_PREFIX);
         boolean success=lambdaUpdate().eq(User::getEmail,email).set(User::getPassword,passwordEncoder.encode(emailResetPasswordRequest.getNewPassword())).update();

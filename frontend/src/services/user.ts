@@ -6,6 +6,7 @@ export interface LoginResult {
   id: number
   username: string
   role: number
+  email: string | null
 }
 
 //获取验证码返回的结构，后端CaptchaResponse
@@ -22,7 +23,7 @@ export interface UserResult {
   status: number
   createTime: string
   updateTime: string
-  email: string
+  email: string | null
 }
 
 //获取验证码：GET /api/captcha
@@ -30,14 +31,19 @@ export function getCaptcha(): Promise<CaptchaResult> {
   return request.get('/captcha')
 }
 
-//登录：POST /api/user/login
+//用户名登录：POST /api/user/login
 export function login(username: string, password: string, captchaId: string, captchaCode: string): Promise<LoginResult> {
   return request.post('/user/login', { username, password, captchaId, captchaCode })
 }
 
+//邮箱登录：POST /api/user/email/login
+export function emailLogin(email: string | null, password: string, captchaId: string, captchaCode: string): Promise<LoginResult> {
+  return request.post('/user/email/login', { email, password, captchaId, captchaCode })
+}
+
 //注册：POST /api/user/register
-export function register(username: string, password: string, captchaId: string, captchaCode: string, email: string): Promise<void> {
-  return request.post('/user/register', { username, password, captchaId, captchaCode, email })
+export function register(username: string, password: string, captchaId: string, captchaCode: string, email?: string | null, emailCode?: string): Promise<void> {
+  return request.post('/user/register', { username, password, captchaId, captchaCode, email, emailCode })
 }
 
 //登出：PUT /api/user/logout
@@ -85,4 +91,22 @@ export function registerAdmin(username: string, password: string, captchaId: str
   return request.post('/user/register/admin', {username, password, captchaId, captchaCode})
 }
 
-//请求向特定邮箱发送邮件： 
+//重置密码操作中请求向特定邮箱发送邮件： POST /api/user/password/send/email-code
+export function sendResetCode(captchaId: string, captchaCode: string, email: string | null): Promise<boolean> {
+  return request.post('/user/password/send/email-code', {captchaId, captchaCode, email})
+}
+
+//绑定邮箱操作中请求向特定邮箱发送邮件： POST /api/user/binding/send/email-code
+export function sendBindingCode(captchaId: string, captchaCode: string, email: string | null): Promise<boolean> {
+  return request.post('/user/binding/send/email-code', {captchaId, captchaCode, email})
+}
+
+//重置密码操作检验邮箱验证码： POST /api/user/password/reset
+export function resetPasswordByEmail(email: string | null, emailCode: string, newPassword: string): Promise<boolean> {
+  return request.post('/user/password/reset', {email, emailCode, newPassword})
+}
+
+//绑定邮箱操作检验邮箱验证码： POST /api/user/binding/email
+export function bindingEmailByEmail(email: string | null, emailCode: string): Promise<boolean> {
+  return request.post('/user/binding/email', {email, emailCode})
+}
