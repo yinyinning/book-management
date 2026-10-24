@@ -3,6 +3,7 @@
     <el-header>
       <el-menu mode="horizontal" router :default-active="activeMenu">
         <el-menu-item index="/home">首页</el-menu-item>
+        <el-menu-item index="/stats" v-if="authStore.role>=1">统计图表</el-menu-item>
         <el-menu-item index="/books">图书浏览</el-menu-item>
         <el-menu-item index="/borrow">我的借阅</el-menu-item>
         <el-menu-item index="/profile">个人中心</el-menu-item>

@@ -1,3 +1,4 @@
+import type { UserStatsResult } from '@/models/stats'
 import request from './request'
 
 //登陆成功返回的结构，后端LoginResponse
@@ -109,4 +110,9 @@ export function resetPasswordByEmail(email: string | null, emailCode: string, ne
 //绑定邮箱操作检验邮箱验证码： POST /api/user/binding/email
 export function bindingEmailByEmail(email: string | null, emailCode: string): Promise<boolean> {
   return request.post('/user/binding/email', {email, emailCode})
+}
+
+//管理员获取用户统计图表： GET /api/user/stats
+export function getUserStats(): Promise<UserStatsResult> {
+  return request.get('/user/stats')
 }

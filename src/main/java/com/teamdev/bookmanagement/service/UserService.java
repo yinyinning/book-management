@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
+import com.teamdev.bookmanagement.dto.response.UserStatsResponse;
 import com.teamdev.bookmanagement.entity.User;
 import java.util.List;
 
@@ -28,4 +29,5 @@ public interface UserService extends IService<User> {
     Boolean resetPasswordByEmail(EmailResetPasswordRequest emailResetPasswordRequest);
     Boolean sendBindingCode(SendEmailCodeRequest sendEmailCodeRequest);
     Boolean bindingEmailByEmail(EmailBindingRequest emailBindingRequest);
+    UserStatsResponse getUserStats();
 }
