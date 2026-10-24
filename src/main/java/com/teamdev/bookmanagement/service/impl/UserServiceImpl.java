@@ -3,13 +3,17 @@ package com.teamdev.bookmanagement.service.impl;
 import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
 import com.teamdev.bookmanagement.common.CacheKeys;
+import com.teamdev.bookmanagement.common.StatItem;
+import com.teamdev.bookmanagement.common.TrendPoint;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
+import com.teamdev.bookmanagement.dto.response.UserStatsResponse;
 import com.teamdev.bookmanagement.entity.SuperAdminTransfer;
 import com.teamdev.bookmanagement.entity.User;
 import com.teamdev.bookmanagement.mapper.SuperAdminTransferMapper;
@@ -22,10 +26,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * 用户业务实现。
@@ -44,6 +52,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final StringRedisTemplate stringRedisTemplate;
     private final SuperAdminTransferMapper superAdminTransferMapper;
     private final MailService mailService;
+    private final UserMapper userMapper;
     private static final int MAX_FAIL_COUNT=5;
     private static final int LOCK_MINUTES=5;
 
@@ -377,5 +386,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         stringRedisTemplate.delete(codeKey);
         stringRedisTemplate.delete(failKey);
         log.info("邮箱{}检验验证码成功",email);
+    }
+
+    @Override
+    public UserStatsResponse getUserStats(){
+        long total=count();
+        long user=lambdaQuery().eq(User::getRole,0).count();
+        long admin=lambdaQuery().eq(User::getRole,1).count();
+        long superAdmin=lambdaQuery().eq(User::getRole,2).count();
+        List<StatItem> roleStatsList=new ArrayList<>(List.of(
+                StatItem.builder().name("普通用户").value(user).build(),
+                StatItem.builder().name("管理员").value(admin).build(),
+                StatItem.builder().name("超级管理员").value(superAdmin).build()
+        ));
+        long able=lambdaQuery().eq(User::getStatus,1).count();
+        long freeze=lambdaQuery().eq(User::getStatus,0).count();
+        List<StatItem> statusStatsList=new ArrayList<>(List.of(
+                StatItem.builder().name("启用").value(able).build(),
+                StatItem.builder().name("禁用").value(freeze).build()
+        ));
+        List<Map<String,Object>> rows=userMapper.selectMaps(new QueryWrapper<User>().select("DATE_FORMAT(create_time,'%Y-%m-%d') AS date","COUNT(*) AS count").ge("create_time", LocalDate.now().minusDays(29).atStartOfDay()).groupBy("DATE_FORMAT(create_time,'%Y-%m-%d')"));
+        Map<String,Long> dateCountMap=rows.stream().collect(Collectors.toMap(e->e.get("date").toString(),e->((Number)e.get("count")).longValue()));
+        DateTimeFormatter dateTimeFormatter=DateTimeFormatter.ofPattern("yyyy-MM-dd");
+        List<TrendPoint> dayRegistrationTrendList=new ArrayList<>();
+        for(int i=29;i>=0;i--){
+            String date=LocalDateTime.now().minusDays(i).format(dateTimeFormatter);
+            long count=dateCountMap.getOrDefault(date,0L);
+            dayRegistrationTrendList.add(TrendPoint.builder().date(date).count(count).build());
+        }
+        return UserStatsResponse.builder().totalUsers(total).roleDistribution(roleStatsList).statusDistribution(statusStatsList).registrationTrend(dayRegistrationTrendList).build();
     }
 }

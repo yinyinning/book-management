@@ -6,10 +6,10 @@ import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.*;
 import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
+import com.teamdev.bookmanagement.dto.response.UserStatsResponse;
 import com.teamdev.bookmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
@@ -148,5 +148,12 @@ public class UserController {
     @SaCheckRole("super_admin")
     public Result<Boolean> cancelTransfer(){
         return Result.success(userService.cancelTransfer());
+    }
+
+    /** 获取用户统计数据（总用户数，角色分组，状态分组，往前一月注册趋势）: GET /api/user/stats */
+    @GetMapping("/stats")
+    @SaCheckRole("admin")
+    public Result<UserStatsResponse> getUserStats(){
+        return Result.success(userService.getUserStats());
     }
 }
