@@ -148,7 +148,7 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         return borrowRecordList.stream().map(b->{
             BookCopy bookCopy=bookCopyMap.get(b.getBookCopyId());
             String username=userNameMap.get(b.getUserId());
-            return BorrowRecordResponse.builder().borrowTime(b.getBorrowTime()).dueTime(b.getDueTime()).returnTime(b.getReturnTime()).barcode(bookCopy==null?"副本已删除":bookCopy.getBarcode()).title(bookCopy==null?"副本已删除":bookTitleMap.get(bookCopy.getBookId())).statusText(statusTextArray[b.getStatus()]).username(username==null?"用户已删除":username).build();
+            return BorrowRecordResponse.builder().borrowTime(b.getBorrowTime()).dueTime(b.getDueTime()).returnTime(b.getReturnTime()).barcode(bookCopy==null?"副本已删除":bookCopy.getBarcode()).title(bookCopy==null?"副本已删除":bookTitleMap.get(bookCopy.getBookId())).statusText(statusTextArray[b.getStatus()]).username(username==null?"用户已删除":username).id(b.getId()).build();
         }).toList();
     }
 }
