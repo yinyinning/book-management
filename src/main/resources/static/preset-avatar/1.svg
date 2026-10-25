@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 70" fill="none" shape-rendering="auto" aria-hidden="true" width="512" height="512">
+    <defs>
+        <g id="eyes-variant04-0160d990">
+            <path d="M8 8.36S8 4 12 4s4 4.36 4 4.36v2.91s0 .73-.67.73c-.66 0-.66-2.9-3.33-2.9S9.33 12 8.67 12 8 11.27 8 11.27z" fill="#ffffff"/>
+        </g>
+        <g id="mouth-default-0160d990">
+            <text x="10" y="7" font-family="system-ui" font-weight="600" font-size="14" fill="#ffffff" text-anchor="middle" dominant-baseline="middle">F</text>
+        </g>
+        <g id="face-default-0160d990">
+            <g class="dbif-eyes">
+                <use transform="translate(-1.0003, 1.75419)" href="#eyes-variant04-0160d990"/>
+            </g>
+            <g class="dbif-eyes">
+                <use transform="matrix(-1 0 0 1 44 0) translate(-1.0003, 1.75419)" href="#eyes-variant04-0160d990"/>
+            </g>
+            <use transform="translate(12 30) translate(0, -1.41929)" href="#mouth-default-0160d990"/>
+        </g>
+        <g id="head-default-0160d990">
+            <g style="mix-blend-mode:overlay">
+                <use href="#face-default-0160d990"/>
+            </g>
+            <g opacity=".5">
+                <use href="#face-default-0160d990"/>
+            </g>
+        </g>
+        <g id="animation-none-0160d990" />
+        <clipPath id="clip-0160d990">
+            <rect width="70" height="70" rx="0" ry="0"/>
+        </clipPath>
+    </defs>
+    <g clip-path="url(#clip-0160d990)">
+        <rect width="70" height="70" fill="#3d4272"/>
+        <use transform="translate(13 16) translate(-0.25674, 0) rotate(-9.2349, 22, 22)" href="#head-default-0160d990"/>
+        <use href="#animation-none-0160d990"/>
+    </g>
+</svg>
