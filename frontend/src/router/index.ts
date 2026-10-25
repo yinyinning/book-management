@@ -51,6 +51,11 @@ const router= createRouter({
                     component: () => import('@/views/ProfileEmailView.vue'),
                 },
                 {
+                    path: 'profile/avatar',
+                    name: 'Avatar',
+                    component: () => import('@/views/ProfileAvatarView.vue'),
+                },
+                {
                     path: 'users',
                     name: 'Users',
                     component: () => import('@/views/UserManageView.vue'),

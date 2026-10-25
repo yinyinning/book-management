@@ -10,6 +10,8 @@ import com.teamdev.bookmanagement.dto.response.UserStatsResponse;
 import com.teamdev.bookmanagement.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
@@ -155,5 +157,17 @@ public class UserController {
     @SaCheckRole("admin")
     public Result<UserStatsResponse> getUserStats(){
         return Result.success(userService.getUserStats());
+    }
+
+    /** 上传头像文件: POST /api/user/avatar/upload */
+    @PostMapping("/avatar/upload")
+    public Result<String> uploadAvatar(@RequestParam("file")MultipartFile file){
+        return Result.success(userService.uploadAvatar(file));
+    }
+
+    /** 更新头像: PUT /api/user/avatar/update */
+    @PutMapping("/avatar/update")
+    public Result<Boolean> updateAvatar(@RequestBody @Valid UpdateAvatarRequest updateAvatarRequest){
+        return Result.success(userService.updateAvatar(updateAvatarRequest));
     }
 }

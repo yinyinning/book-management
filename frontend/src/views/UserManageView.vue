@@ -3,7 +3,7 @@
         <el-button @click="newUser">新建用户</el-button>
         <el-button @click="newAdmin" v-if="authStore.role===2">新建管理员</el-button>
     </div>
-    <el-table :data="users" @row-contextmenu="onRowMenu">
+    <el-table :data="users" @row-contextmenu="onRowMenu" :row-class-name="rowClass">
         <el-table-column prop="id" label="用户ID"/>
         <el-table-column prop="username" label="用户名"/>
         <el-table-column label="邮箱">
@@ -103,6 +103,9 @@ function handleMenu(action: string){
 function closeMenu(){
     menuVisible.value=false
 }
+function rowClass({ row } : { row : UserResult}): string {
+    return authStore.id===row.id ? 'current-user-row' : ''
+}
 
 async function fetch() {
     users.value=await listUsers()
@@ -164,7 +167,7 @@ onUnmounted(()=>{
 })
 </script>
 
-<style scope>
+<style scoped>
 .new-button {
     margin-bottom: 10px;
 }
@@ -192,6 +195,9 @@ onUnmounted(()=>{
 }
 .menu-item:hover {
     background-color: #f5f7fa;
+}
+:deep(.current-user-row) {
+    background-color: #ecf5ff;
 }
 </style>
 

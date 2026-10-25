@@ -6,6 +6,8 @@ import com.teamdev.bookmanagement.dto.response.LoginResponse;
 import com.teamdev.bookmanagement.dto.response.UserResponse;
 import com.teamdev.bookmanagement.dto.response.UserStatsResponse;
 import com.teamdev.bookmanagement.entity.User;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
@@ -30,4 +32,6 @@ public interface UserService extends IService<User> {
     Boolean sendBindingCode(SendEmailCodeRequest sendEmailCodeRequest);
     Boolean bindingEmailByEmail(EmailBindingRequest emailBindingRequest);
     UserStatsResponse getUserStats();
+    String uploadAvatar(MultipartFile file);
+    Boolean updateAvatar(UpdateAvatarRequest updateAvatarRequest);
 }

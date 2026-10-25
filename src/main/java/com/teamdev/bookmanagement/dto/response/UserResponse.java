@@ -15,4 +15,5 @@ public class UserResponse {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String email;
+    private String avatar;
 }
