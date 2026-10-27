@@ -16,6 +16,11 @@ const router= createRouter({
                     component: () => import('@/views/HomeView.vue'),
                 },
                 {
+                    path: 'categories',
+                    name: 'Categories',
+                    component: () => import('@/views/CategoryView.vue'),
+                },
+                {
                     path: 'stats',
                     name: 'Stats',
                     component: () => import('@/views/StatsView.vue'),
@@ -59,18 +64,18 @@ const router= createRouter({
                     path: 'users',
                     name: 'Users',
                     component: () => import('@/views/UserManageView.vue'),
-                }
+                },
+                {
+                    path: 'book-manage',
+                    name: 'BookManage',
+                    component: () => import('@/views/BookManage.vue'),
+                },
+                {
+                    path: 'book-copy',
+                    name: 'BookCopyManage',
+                    component: () => import('@/views/BookCopyManage.vue'),
+                },
             ]
-        },
-        {
-      path: '/book',
-      name: 'BookManage',
-      component: () => import('@/views/BookManage.vue'),
-        },
-        {
-      path: '/book-copy',
-      name: 'BookCopyManage',
-      component: () => import('@/views/BookCopyManage.vue'),
         },
         {
             path: '/login',

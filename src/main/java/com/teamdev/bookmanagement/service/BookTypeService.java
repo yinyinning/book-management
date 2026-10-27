@@ -3,6 +3,7 @@ package com.teamdev.bookmanagement.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.teamdev.bookmanagement.dto.request.AddBookTypeRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookTypeRequest;
+import com.teamdev.bookmanagement.dto.response.BookResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookType;
 
@@ -16,5 +17,5 @@ public interface BookTypeService extends IService<BookType> {
     Boolean resetBookTypes(Long bookId, List<Long> typeIds);
     Boolean clearBookTypes(Long bookId);
     List<BookType> getBookTypes(Long bookId);
-    List<Book> getTypeBooks(Long typeId);
+    List<BookResponse> getTypeBooks(Long typeId);
 }

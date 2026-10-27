@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
 import com.teamdev.bookmanagement.dto.request.AddBookTypeRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookTypeRequest;
+import com.teamdev.bookmanagement.dto.response.BookResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookType;
 import com.teamdev.bookmanagement.entity.BookTypeRel;
@@ -120,7 +121,7 @@ public class BookTypeServiceImpl extends ServiceImpl<BookTypeMapper, BookType> i
     }
 
     @Override
-    public List<Book> getTypeBooks(Long typeId){
+    public List<BookResponse> getTypeBooks(Long typeId){
         BookType bookType=getOptById(typeId).orElseThrow(()->new BusinessException(404,"查询其下书的分类不存在"));
         List<BookTypeRel> bookTypeRelList=new LambdaQueryChainWrapper<>(bookTypeRelMapper).eq(BookTypeRel::getTypeId,typeId).list();
         List<Long> bookIdList=new ArrayList<>();
@@ -132,6 +133,6 @@ public class BookTypeServiceImpl extends ServiceImpl<BookTypeMapper, BookType> i
         }
         List<Book> bookList=bookService.lambdaQuery().in(Book::getId,bookIdList).list();
         log.debug("查询分类[{}]“{}”下的图书成功",bookType.getId(),bookType.getName());
-        return bookList;
+        return bookService.toResponse(bookList);
     }
 }
