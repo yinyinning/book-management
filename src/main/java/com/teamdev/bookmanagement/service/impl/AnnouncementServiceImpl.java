@@ -49,6 +49,11 @@ public class AnnouncementServiceImpl extends ServiceImpl<AnnouncementMapper, Ann
             return lambdaQuery()
                     .orderByDesc(Announcement::getPublishTime)
                     .list();
+        } else if (type==1&&!StpUtil.hasRole("admin")) {
+            return lambdaQuery()
+                    .eq(Announcement::getType, type).eq(Announcement::getPublisherId, StpUtil.getLoginIdAsLong())
+                    .orderByDesc(Announcement::getPublishTime)
+                    .list();
         }
         return lambdaQuery()
                 .eq(Announcement::getType, type)

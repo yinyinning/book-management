@@ -54,10 +54,16 @@ const router= createRouter({
                     path: 'users',
                     name: 'Users',
                     component: () => import('@/views/UserManageView.vue'),
-                }
+                },
+                {
+                    path: 'announcement',
+                    name: 'Announcement',
+                    component: () => import('@/views/AnnounceManage.vue')
+                 }
             ]
         },
-        {
+        
+                 {
       path: '/book',
       name: 'BookManage',
       component: () => import('@/views/BookManage.vue'),
