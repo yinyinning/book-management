@@ -237,7 +237,8 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         }
     }
 
-    private List<BookResponse> toResponse(List<Book> bookList){
+    @Override
+    public List<BookResponse> toResponse(List<Book> bookList){
         if (bookList.isEmpty()){
             return List.of();
         }
