@@ -36,6 +36,7 @@ public class BorrowController {
     }
 
     /** 管理员帮助还书：PUT /api/borrow/help/return，body 传 {"bookCopyId":2}*/
+    @SaCheckRole("admin")
     @PutMapping("/help/return")
     public Result<Void> helpReturnBook(@Valid @RequestBody ReturnRequest request) {
         borrowRecordService.helpReturnBook(request.getBookCopyId());
