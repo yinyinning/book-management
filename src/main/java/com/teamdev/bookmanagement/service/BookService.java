@@ -16,4 +16,5 @@ public interface BookService extends IService<Book> {
     Boolean updateBook(UpdateBookRequest updateBookRequest);
     Boolean deleteBook(Long id);
     PageResponse<BookResponse> search(String keyword,Integer pageNum,Integer pageSize);
+    List<BookResponse> toResponse(List<Book> bookList);
 }

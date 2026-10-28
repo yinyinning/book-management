@@ -8,6 +8,7 @@ export interface LoginResult {
   username: string
   role: number
   email: string | null
+  avatar: string | null
 }
 
 //获取验证码返回的结构，后端CaptchaResponse
@@ -25,6 +26,7 @@ export interface UserResult {
   createTime: string
   updateTime: string
   email: string | null
+  avatar: string | null
 }
 
 //获取验证码：GET /api/captcha
@@ -115,4 +117,16 @@ export function bindingEmailByEmail(email: string | null, emailCode: string): Pr
 //管理员获取用户统计图表： GET /api/user/stats
 export function getUserStats(): Promise<UserStatsResult> {
   return request.get('/user/stats')
+}
+
+//上传头像文件： POST /api/user/avatar/upload
+export function uploadAvatar(file: File): Promise<string> {
+  const formData=new FormData()
+  formData.append('file',file)
+  return request.post('/user/avatar/upload',formData)
+}
+
+//更新头像： PUT /api/user/avatar/update
+export function updateAvatar(avatar: string): Promise<boolean> {
+  return request.put('/user/avatar/update',{avatar})
 }

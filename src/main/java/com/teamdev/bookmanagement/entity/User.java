@@ -37,8 +37,11 @@ public class User {
      * 所以这里不手动赋值;插入/更新时 MyBatis-Plus 会忽略为 null 的字段。
      */
     private LocalDateTime createTime;
-
     private LocalDateTime updateTime;
+
     /** 用户绑定邮箱 */
     private String email;
+
+    /** 用户上传的头像 */
+    private String avatar;
 }

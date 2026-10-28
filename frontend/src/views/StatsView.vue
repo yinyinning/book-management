@@ -90,7 +90,7 @@ function formatUpdate(v: number): string {
     const m=Math.floor(v/1000/60%60)
     const h=Math.floor(v/1000/60/60%24)
     const d=Math.floor(v/1000/60/60/24)
-    return `${d}天${h}时${m}分`
+    return `${d}天 ${h}时 ${m}分`
 }
 
 function formatHeap(v: number): string {

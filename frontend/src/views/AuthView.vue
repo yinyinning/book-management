@@ -13,6 +13,13 @@
             <el-form-item>
               <el-input v-model="password" type="password" show-password placeholder="请输入密码" />
             </el-form-item>
+            <el-form-item>
+              <div class="captcha-row">
+                <el-input v-model="captchaCode" placeholder="请输入验证码" />
+                <img class="captcha-img" :src="captchaImage" @click="refreshCaptcha" alt="验证码" v-if="captchaImage" />
+                <el-button @click="refreshCaptcha" v-else>重试</el-button>
+              </div>
+            </el-form-item>
             <el-form-item v-if="mode==='register'">
               <el-input v-model="email" placeholder="请输入邮箱（选填，用于找回密码）" />
             </el-form-item>
@@ -23,18 +30,15 @@
               </div>
             </el-form-item>
             <el-form-item>
-              <div class="captcha-row">
-                <el-input v-model="captchaCode" placeholder="请输入验证码" />
-                <img class="captcha-img" :src="captchaImage" @click="refreshCaptcha" alt="验证码" v-if="captchaImage" />
-                <el-button @click="refreshCaptcha" v-else>重试</el-button>
-              </div>
+                <el-button type="primary" @click="onLogin" v-if="mode === 'login'">登录</el-button>
+                <el-button type="primary" @click="onRegister" v-if="mode==='register'">注册</el-button>
             </el-form-item>
             <el-form-item>
-                <el-button type="primary" @click="onLogin" v-if="mode === 'login'">登录</el-button>
+              <div class="link-container">
                 <el-button link type="primary" v-if="mode==='login'" @click="router.push('/forgot-password')">忘记密码？</el-button>
                 <el-button link type="primary" v-if="mode==='login' && loginMode==='userLogin'" @click="loginMode='emailLogin'">邮箱登录？</el-button>
                 <el-button link type="primary" v-if="mode==='login' && loginMode==='emailLogin'" @click="loginMode='userLogin'">用户名登录？</el-button>
-                <el-button type="primary" @click="onRegister" v-if="mode==='register'">注册</el-button>
+              </div>
             </el-form-item>
         </el-form>
       </div>
@@ -185,6 +189,26 @@ onUnmounted(()=>{
   border-radius: 4px;
 }
 .captcha-row .el-input {
+  flex: 1;
+}
+.link-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-items: center;
+  align-items: center;
+  gap: 10px;
+}
+.link-container :hover {
+  text-decoration: underline;
+}
+.code-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.code-row .el-button {
   flex: 1;
 }
 </style>

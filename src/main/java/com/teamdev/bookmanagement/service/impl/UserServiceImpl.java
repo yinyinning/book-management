@@ -1,6 +1,7 @@
 package com.teamdev.bookmanagement.service.impl;
 
 import cn.dev33.satoken.stp.StpUtil;
+import cn.hutool.core.lang.UUID;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -26,6 +27,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -128,7 +133,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         StpUtil.login(user.getId());
         stringRedisTemplate.delete(failKey);
         log.info("用户{}登录成功",user.getUsername());
-        return LoginResponse.builder().id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).email(user.getEmail()).build();
+        return LoginResponse.builder().avatar(user.getAvatar()).id(user.getId()).username(user.getUsername()).role(user.getRole()).token(StpUtil.getTokenValue()).email(user.getEmail()).build();
     }
 
     @Override
@@ -223,7 +228,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     private UserResponse toResponse(User user){
-        return UserResponse.builder().id(user.getId()).username(user.getUsername()).status(user.getStatus()).role(user.getRole()).createTime(user.getCreateTime()).updateTime(user.getUpdateTime()).email(user.getEmail()).build();
+        return UserResponse.builder().avatar(user.getAvatar()).id(user.getId()).username(user.getUsername()).status(user.getStatus()).role(user.getRole()).createTime(user.getCreateTime()).updateTime(user.getUpdateTime()).email(user.getEmail()).build();
     }
 
     @Override
@@ -415,5 +420,64 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             dayRegistrationTrendList.add(TrendPoint.builder().date(date).count(count).build());
         }
         return UserStatsResponse.builder().totalUsers(total).roleDistribution(roleStatsList).statusDistribution(statusStatsList).registrationTrend(dayRegistrationTrendList).build();
+    }
+
+    @Override
+    public String uploadAvatar(MultipartFile file){
+        if(file.isEmpty()){
+            throw new BusinessException(400,"未接收到文件");
+        }
+        String type=file.getContentType();
+        if((!"image/webp".equals(type))&&(!"image/jpeg".equals(type))&&(!"image/png".equals(type))){
+            throw new BusinessException(400,"只支持 jpg/png/webp");
+        }
+        if(file.getSize()>4*1024*1024){
+            throw new BusinessException(400,"图片不能超过 4MB");
+        }
+        String suffix=getSuffix(file);
+        String filename= UUID.randomUUID()+suffix;
+        File dir=new File("upload/avatar");
+        if(!dir.exists()&&!dir.mkdirs()){
+            throw new BusinessException(500,"创建头像存储目录失败");
+        }
+        try {
+            file.transferTo(new File(dir, filename));
+        } catch (IOException e) {
+            throw new BusinessException(400,"文件上传失败");
+        }
+        String avatar="/avatar/"+filename;
+        User user=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(400,"意料之外的错误，进行操作的用户不存在"));
+        boolean success=lambdaUpdate().eq(User::getId,StpUtil.getLoginIdAsLong()).set(User::getAvatar,avatar).update();
+        log.info("用户{}上传头像照片{}",user.getUsername(),success?"成功":"失败");
+        return avatar;
+    }
+
+    private String getSuffix(MultipartFile file){
+        String originalName=file.getOriginalFilename();
+        if(originalName!=null) {
+            int dotId = originalName.lastIndexOf(".");
+            if (dotId != -1) {
+                return originalName.substring(dotId);
+            }
+        }
+        String type=file.getContentType();
+        if("image/jpeg".equals(type)){
+            return ".jpg";
+        }
+        if("image/png".equals(type)){
+            return ".png";
+        }
+        if("image/webp".equals(type)){
+            return ".webp";
+        }
+        throw new BusinessException(400,"无法识别文件");
+    }
+
+    @Override
+    public Boolean updateAvatar(UpdateAvatarRequest updateAvatarRequest){
+        User user=getOptById(StpUtil.getLoginIdAsLong()).orElseThrow(()->new BusinessException(400,"意料之外的错误，进行操作的用户不存在"));
+        boolean success=lambdaUpdate().eq(User::getId,StpUtil.getLoginIdAsLong()).set(User::getAvatar,updateAvatarRequest.getAvatar()).update();
+        log.info("用户{}更新头像{}",user.getUsername(),success?"成功":"失败");
+        return success;
     }
 }

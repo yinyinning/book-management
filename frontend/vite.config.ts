@@ -16,6 +16,14 @@ export default defineConfig({
         target: 'http://localhost:8080',
         changeOrigin: true,
       },
+      '/avatar': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      },
+      '/preset-avatar': {
+        target: 'http://localhost:8080',
+        changeOrigin: true,
+      }
     },
   },
 })

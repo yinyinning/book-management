@@ -5,6 +5,7 @@ import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.AddBookTypeRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookTypeRequest;
+import com.teamdev.bookmanagement.dto.response.BookResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookType;
 import com.teamdev.bookmanagement.service.BookTypeService;
@@ -29,7 +30,7 @@ public class BookTypeController {
 
     /** GET /api/book-type/{typeId}/books 查该分类下的所有书 */
     @GetMapping("/{typeId}/books")
-    public Result<List<Book>> getTypeBooks(@PathVariable Long typeId){
+    public Result<List<BookResponse>> getTypeBooks(@PathVariable Long typeId){
         return Result.success(bookTypeService.getTypeBooks(typeId));
     }
 
