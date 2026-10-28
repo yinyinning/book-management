@@ -62,7 +62,7 @@ const captchaId=ref('')
 const captchaCode=ref('')
 const captchaImage=ref('')
 const email=ref<string | null>(null)
-const emailCode=ref('')
+const emailCode=ref<string | null>(null)
 const countdown=ref(0)
 let timer: number | null = null
 
@@ -71,7 +71,7 @@ watch(mode, () => {
     password.value = ''
     captchaCode.value = ''
     email.value=null
-    emailCode.value=''
+    emailCode.value=null
     if(timer){
       window.clearInterval(timer)
       timer=null
