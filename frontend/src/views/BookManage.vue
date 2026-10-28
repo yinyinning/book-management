@@ -83,11 +83,11 @@
       <el-table-column prop="author" label="作者" />
       <el-table-column prop="publisher" label="出版社" />
       <el-table-column label="操作" >  
-      <template #default="scope">
-        <el-button type="primary" @click="openEdit(scope.row)">编辑</el-button>
-        <el-button type="danger" @click="remove(scope.row)">删除</el-button>
-      </template>
-    </el-table-column>
+        <template #default="scope">
+          <el-button type="primary" @click="openEdit(scope.row)">编辑</el-button>
+          <el-button type="danger" @click="remove(scope.row)">删除</el-button>
+        </template>
+      </el-table-column>
     </el-table>
 
     <!-- 新增对话框 -->

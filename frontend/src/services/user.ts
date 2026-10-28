@@ -45,7 +45,7 @@ export function emailLogin(email: string | null, password: string, captchaId: st
 }
 
 //注册：POST /api/user/register
-export function register(username: string, password: string, captchaId: string, captchaCode: string, email?: string | null, emailCode?: string): Promise<void> {
+export function register(username: string, password: string, captchaId: string, captchaCode: string, email?: string | null, emailCode?: string | null): Promise<void> {
   return request.post('/user/register', { username, password, captchaId, captchaCode, email, emailCode })
 }
 

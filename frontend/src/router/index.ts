@@ -75,6 +75,11 @@ const router= createRouter({
                     name: 'BookCopyManage',
                     component: () => import('@/views/BookCopyManage.vue'),
                 },
+                {
+                    path: 'book-type-manage',
+                    name: 'BookTypeManage',
+                    component: () => import('@/views/BookTypeManageView.vue'),
+                },
             ]
         },
         {

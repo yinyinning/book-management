@@ -36,7 +36,38 @@ export function getBooksByType(typeId: number): Promise<Book[]> {
   return request.get(`/book-type/${typeId}/books`);
 }
 
+
 //列出某图书的所有分类：GET /api/book/{bookId}/types
 export function getTypesByBook(bookId: number): Promise<BookType[]> {
   return request.get(`/book/${bookId}/types`);
+}
+
+//新增分类：POST /api/book-type/add
+export function addBookType(name: string): Promise<boolean> {
+  return request.post('/book-type/add', {name})
+}
+
+//更改分类名：PUT /api/book-type/update
+export function updateBookType(id: number, name: string): Promise<boolean> {
+  return request.put('/book-type/update',{ id, name })
+}
+
+//删除分类：DELETE /api/book-type/delete/{id}
+export function deleteBookType(id: number): Promise<boolean> {
+  return request.delete(`/book-type/delete/${id}`)
+}
+
+//为某本书额外增加分类：PUT /api/book/add/{bookId}/types
+export function addBookTypes(bookId: number,typeIds: number[]): Promise<boolean> {
+  return request.put(`/book/add/${bookId}/types`, {typeIds})
+}
+
+//为某本书重新设置分类：PUT /api/book/reset/{bookId}/types
+export function resetBookTypes(bookId: number,typeIds: number[]): Promise<boolean> {
+  return request.put(`/book/reset/${bookId}/types`, {typeIds})
+}
+
+//清空某本书的分类： DELETE /api/book/clear/{bookId}/types
+export function clearBookTypes(bookId: number): Promise<boolean> {
+  return request.delete(`/book/clear/${bookId}/types`)
 }
