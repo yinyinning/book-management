@@ -1,5 +1,6 @@
 import request from './request'
 import type{ BorrowRecord  } from '@/models/borrow'
+import type { BookBorrowStat } from '@/models/stats'
 
 // 借书：POST /api/borrow，body 传 {bookCopyId}
 export function borrow(bookCopyId:number): Promise<void>{
@@ -30,3 +31,7 @@ export function listUserRecord(id:number): Promise<BorrowRecord[]> {
 export function listAllRecord(): Promise<BorrowRecord[]> {
   return request.get('/borrow/all') as any
 }
+// 管理员获取图书借阅次数统计：GET /api/borrow/stats
+ export function getBookBorrowStats(): Promise<BookBorrowStat[]> {
+   return request.get('/borrow/stats') as any
+  }

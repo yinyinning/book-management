@@ -1,6 +1,7 @@
 package com.teamdev.bookmanagement.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.teamdev.bookmanagement.dto.response.BookBorrowStat;
 import com.teamdev.bookmanagement.dto.response.BorrowRecordResponse;
 import com.teamdev.bookmanagement.entity.BorrowRecord;
 import java.util.List;
@@ -20,5 +21,8 @@ public interface BorrowRecordService extends IService<BorrowRecord> {
 
     List<BorrowRecordResponse> listMyRecord();
     List<BorrowRecordResponse> listAllRecord();
+
+    /** 图书借阅次数统计 */
+    List<BookBorrowStat> getBookBorrowStats();
 }
 
