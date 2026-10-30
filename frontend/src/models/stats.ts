@@ -34,3 +34,8 @@ export interface SystemStatsResult {
     javaVersion: string
     osName: string
 }
+export interface BookBorrowStat {
+    bookId: number
+    title: string
+    borrowCount: number
+}

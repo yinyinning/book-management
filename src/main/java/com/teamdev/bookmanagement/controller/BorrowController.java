@@ -4,6 +4,7 @@ import cn.dev33.satoken.annotation.SaCheckRole;
 import com.teamdev.bookmanagement.common.Result;
 import com.teamdev.bookmanagement.dto.request.BorrowRequest;
 import com.teamdev.bookmanagement.dto.request.ReturnRequest;
+import com.teamdev.bookmanagement.dto.response.BookBorrowStat;
 import com.teamdev.bookmanagement.dto.response.BorrowRecordResponse;
 import com.teamdev.bookmanagement.service.BorrowRecordService;
 import jakarta.validation.Valid;
@@ -61,4 +62,12 @@ public class BorrowController {
     public Result<List<BorrowRecordResponse>> listAllRecord(){
         return Result.success(borrowRecordService.listAllRecord());
     }
-}
+    /** 查询所有借阅次数 GET /api/borrow/stats*/
+    @SaCheckRole("admin")
+    @GetMapping("/stats")
+    public Result<List<BookBorrowStat>> getBookBorrowStats(){
+        return Result.success(borrowRecordService.getBookBorrowStats());
+    }
+
+
+    }
