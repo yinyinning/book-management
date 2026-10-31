@@ -9,16 +9,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.teamdev.bookmanagement.common.BusinessException;
 import com.teamdev.bookmanagement.dto.request.AddBookRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookRequest;
+import com.teamdev.bookmanagement.dto.response.BookBorrowStat;
 import com.teamdev.bookmanagement.dto.response.BookResponse;
 import com.teamdev.bookmanagement.dto.response.PageResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookCopy;
 import com.teamdev.bookmanagement.entity.BookType;
 import com.teamdev.bookmanagement.entity.BookTypeRel;
-import com.teamdev.bookmanagement.mapper.BookCopyMapper;
-import com.teamdev.bookmanagement.mapper.BookMapper;
-import com.teamdev.bookmanagement.mapper.BookTypeMapper;
-import com.teamdev.bookmanagement.mapper.BookTypeRelMapper;
+import com.teamdev.bookmanagement.mapper.*;
 import com.teamdev.bookmanagement.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,6 +38,7 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
     private final BookCopyMapper bookCopyMapper;
     private final BookTypeRelMapper bookTypeRelMapper;
     private final BookTypeMapper bookTypeMapper;
+    private final BorrowRecordMapper borrowRecordMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final ObjectMapper objectMapper;
     private static final String EMPTY_MARKER="EMPTY";
@@ -138,6 +137,17 @@ public class BookServiceImpl extends ServiceImpl<BookMapper, Book> implements Bo
         }finally {
             stringRedisTemplate.delete(lockKey);
         }
+    }
+
+    @Override
+    public List<BookResponse> listHotBooks(Integer limit){
+        List<BookBorrowStat> stats=borrowRecordMapper.selectBookBorrowStats();
+        List<Long> hotBookIds=stats.stream().filter(s->s.getBorrowCount()!=null&&s.getBorrowCount()>0).limit(limit).map(BookBorrowStat::getBookId).toList();
+        if(hotBookIds.isEmpty()){
+            return List.of();
+        }
+        Map<Long,Book> idBookMap=lambdaQuery().in(Book::getId,hotBookIds).list().stream().collect(Collectors.toMap(Book::getId,b->b));
+        return toResponse(hotBookIds.stream().map(idBookMap::get).toList());
     }
 
     @Override

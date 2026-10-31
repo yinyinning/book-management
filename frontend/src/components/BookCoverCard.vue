@@ -24,7 +24,7 @@ function goDetail(){
 <style scoped>
 .book-cover {
     width: 120px;
-    height: 194px;
+    height: 50px;
     padding: 10px;
     border-radius: 5px;
     text-align: center;

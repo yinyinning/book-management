@@ -12,6 +12,7 @@ import java.util.List;
 public interface BookService extends IService<Book> {
     BookResponse getBookById(Long bookId);
     List<BookResponse> listBooks();
+    List<BookResponse> listHotBooks(Integer limit);
     Long addBook(AddBookRequest addBookRequest);
     Boolean updateBook(UpdateBookRequest updateBookRequest);
     Boolean deleteBook(Long id);

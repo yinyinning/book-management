@@ -6,7 +6,6 @@ import com.teamdev.bookmanagement.dto.request.AddBookRequest;
 import com.teamdev.bookmanagement.dto.request.UpdateBookRequest;
 import com.teamdev.bookmanagement.dto.response.BookResponse;
 import com.teamdev.bookmanagement.dto.response.PageResponse;
-import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.service.BookService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +32,12 @@ public class BookController {
     @GetMapping("/list")
     public Result<List<BookResponse>> list() {
         return Result.success(bookService.listBooks());
+    }
+
+    /** 查询最热图书:GET /api/book/hot/{limit} */
+    @GetMapping("/hot/{limit}")
+    public Result<List<BookResponse>> listHotBooks(@PathVariable Integer limit){
+        return Result.success(bookService.listHotBooks(limit));
     }
 
     /** 模糊分页查书:GET /api/book/search */

@@ -22,7 +22,7 @@
             <el-button @click="borrowDialogVisible=true" :disabled="borrowLimit===0">借阅</el-button>
         </div>
         <el-dialog v-model="borrowDialogVisible">
-            <div class="borrow-dialog">
+            <div class="borrow-dialog" v-keyboard-nav="onBorrow">
                 <h3>请选择借阅数量</h3>
                 <el-input-number v-model="borrowCount" :min="1" :max="borrowLimit" />
                 <el-button @click="onBorrow">确认</el-button>

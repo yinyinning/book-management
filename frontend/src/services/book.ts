@@ -7,8 +7,13 @@ export function getById(id: number): Promise<Book> {
 }
 
 //查询全部图书： GET /api/book/list
-export function listBooks(): Promise<Book[]>{
+export function listBooks(): Promise<Book[]> {
   return request.get('/book/list') as any
+}
+
+//查询最热图书： GET /api/book/hot/{limit}
+export function listHotBooks(limit: number): Promise<Book[]> {
+  return request.get(`/book/hot/${limit}`)
 }
 
 // 分页模糊搜索：GET /api/book/search?keyword=&pageNum=&pageSize=
