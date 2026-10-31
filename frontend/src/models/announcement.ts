@@ -7,4 +7,5 @@
       type: number
       publisherId: number
       publishTime: string
+      publisherName: string
   }
