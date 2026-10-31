@@ -35,18 +35,21 @@
             <v-chart :option="roleOption" autoresize />
             <v-chart :option="statusOption" autoresize />
             <v-chart :option="registrationOption" autoresize />
+            <v-chart :option="borrowOption" autoresize />
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
-import type{ SystemStatsResult, UserStatsResult } from '@/models/stats';
+import type{ SystemStatsResult, UserStatsResult,BookBorrowStat } from '@/models/stats';
 import { getSystemStats } from '@/services/system';
+import { getBookBorrowStats } from '@/services/borrow';
 import { getUserStats } from '@/services/user';
 import { computed, onMounted, ref } from 'vue'
 
 const systemStats=ref<SystemStatsResult | null>(null)
 const userStats=ref<UserStatsResult | null>(null)
+const borrowStats=ref<BookBorrowStat[]>([])
 const roleOption=computed(()=>({
     title: { text: '角色分布' },
     tooltip: { trigger: 'item' },
@@ -81,9 +84,21 @@ const registrationOption=computed(()=>({
     }]
 }))
 
+const borrowOption=computed(()=>({
+    title: { text: '图书借阅次数排行' },
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: borrowStats.value.map(s => s.title),axisLabel: { rotate: 45 } },
+    yAxis: { type: 'value' },
+    series: [{
+        type: 'bar',
+        data: borrowStats.value.map(s => s.borrowCount)
+    }]
+}))
+
 async function fetch() {
     systemStats.value=await getSystemStats()
     userStats.value=await getUserStats()
+    borrowStats.value = await getBookBorrowStats()
 }
 
 function formatUpdate(v: number): string {

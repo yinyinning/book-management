@@ -1,9 +1,9 @@
 package com.teamdev.bookmanagement.service.impl;
-
 import java.util.List;
 import cn.dev33.satoken.stp.StpUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.teamdev.bookmanagement.common.BusinessException;
+import com.teamdev.bookmanagement.dto.response.BookBorrowStat;
 import com.teamdev.bookmanagement.dto.response.BorrowRecordResponse;
 import com.teamdev.bookmanagement.entity.Book;
 import com.teamdev.bookmanagement.entity.BookCopy;
@@ -146,6 +146,11 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         return toResponse(lambdaQuery().orderByDesc(BorrowRecord::getBorrowTime).list());
     }
 
+    @Override
+    public List<BookBorrowStat> getBookBorrowStats() {
+        return baseMapper.selectBookBorrowStats();
+    }
+
     private List<BorrowRecordResponse> toResponse(List<BorrowRecord> borrowRecordList){
         if (borrowRecordList.isEmpty()){
             return List.of();
@@ -159,6 +164,7 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         Set<Long> bookIdSet=bookCopyList.stream().map(BookCopy::getBookId).collect(Collectors.toSet());
         List<Book> bookList;
         if (bookIdSet.isEmpty()){
+
             bookList=List.of();
         }
         else {
@@ -171,4 +177,5 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
             return BorrowRecordResponse.builder().borrowTime(b.getBorrowTime()).dueTime(b.getDueTime()).returnTime(b.getReturnTime()).barcode(bookCopy==null?"副本已删除":bookCopy.getBarcode()).title(bookCopy==null?"副本已删除":bookTitleMap.get(bookCopy.getBookId())).statusText(statusTextArray[b.getStatus()]).username(username==null?"用户已删除":username).id(b.getId()).build();
         }).toList();
     }
+
 }
