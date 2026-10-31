@@ -10,6 +10,7 @@
         <el-menu-item index="/stats" v-if="authStore.role>=1">统计图表</el-menu-item>
         <el-menu-item index="/books">图书浏览</el-menu-item>
         <el-menu-item index="/borrow">我的借阅</el-menu-item>
+        <el-menu-item index="/announcement">通告管理</el-menu-item>
         <el-sub-menu index="profile">
           <template #title>个人中心</template>
           <el-menu-item index="/profile">我的资料</el-menu-item>

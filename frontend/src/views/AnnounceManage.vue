@@ -61,6 +61,9 @@
     <el-table :data="list">
       <el-table-column prop="title" label="标题"/>
       <el-table-column prop="content" label="内容" show-overflow-tooltip/>
+      <el-table-column prop="publisherName" label="发布人"/>
+        <el-table-column prop="publisherId" label="发布人ID"/>
+
       <el-table-column prop="publishTime" label="发布时间"/>
       <el-table-column label="操作" #default="scope">
         <el-button type="danger" @click="remove(scope.row)" v-if="authStore.role >= 1">删除</el-button>

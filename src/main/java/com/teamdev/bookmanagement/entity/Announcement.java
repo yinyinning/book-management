@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
-
+import com.baomidou.mybatisplus.annotation.TableField;
 import java.time.LocalDateTime;
 
 @Data
@@ -28,6 +28,8 @@ public class Announcement {
 
     /** 发布时间 */
     private LocalDateTime publishTime;
-
+    /** 发布人用户名(不落库) */
+    @TableField(exist = false)
+    private String publisherName;
 }
 
