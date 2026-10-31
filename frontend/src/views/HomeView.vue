@@ -115,4 +115,38 @@ onMounted(()=>{
     width: 100%;
     text-align: center;
 }
+.newest-announcement {
+      text-align: left;                 /* 让公告靠左(覆盖全局的居中) */
+      background: #fff;
+      border: 1px solid #e5e5e5;
+      border-radius: 8px;
+      padding: 16px 20px;
+  }
+  .newest-announcement p:first-child {
+      font-weight: bold;                 /* 「最新公告」标题加粗 */
+      font-size: 18px;
+      margin: 0 0 12px;
+  }
+  .announcement-item {
+      padding: 12px 0;
+      border-bottom: 1px dashed #e5e5e5; /* 每条之间用虚线分开 */
+  }
+  .announcement-item:last-child {
+      border-bottom: none;
+  }
+  .announcement-title {
+      font-weight: 600;
+      font-size: 15px;
+  }
+  .announcement-time {
+      color: #999;                       /* 时间灰字、变小 */
+      font-size: 12px;
+      margin: 4px 0;
+  }
+  .announcement-content {
+      color: #666;
+      font-size: 14px;
+      margin-top: 6px;
+      line-height: 1.5;                  /* 行高放大一点,不挤 */
+  }
 </style>
