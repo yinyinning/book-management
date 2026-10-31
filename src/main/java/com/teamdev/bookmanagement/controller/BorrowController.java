@@ -24,9 +24,8 @@ public class BorrowController {
 
     /** 借书：POST /api/borrow，body 传 {"bookCopyId":2} */
     @PostMapping
-    public Result<Void> borrow(@Valid @RequestBody BorrowRequest request) {
-        borrowRecordService.borrow(request.getBookCopyId());
-        return Result.success();
+    public Result<String> borrow(@Valid @RequestBody BorrowRequest request) {
+        return Result.success(borrowRecordService.borrow(request.getBookCopyId()));
     }
 
     /** 还书：PUT /api/borrow/return，body 传 {"bookCopyId":2}*/
@@ -43,10 +42,23 @@ public class BorrowController {
         borrowRecordService.helpReturnBook(request.getBookCopyId());
         return Result.success();
     }
+
     /** 查询我的借阅记录：GET /api/borrow/my 用户查询自己的借阅记录*/
     @GetMapping("/my")
     public Result<List<BorrowRecordResponse>> listMyRecord() {
         return Result.success(borrowRecordService.listMyRecord());
+    }
+
+    /** 查我借阅中的图书的ID列表：GET /api/borrow/my/bookIds */
+    @GetMapping("/my/bookIds")
+    public Result<List<Long>> getMyBookIds(){
+        return Result.success(borrowRecordService.listBorrowBookIds());
+    }
+
+    /** 查我正借阅副本的数量：GET /api/borrow/my/borrowing/count */
+    @GetMapping("/my/borrowing/count")
+    public Result<Long> getMyBorrowingCount(){
+        return Result.success(borrowRecordService.countBorrowing());
     }
 
     /** 管理员查询某普通用户借阅记录：GET /api/borrow/{id} */

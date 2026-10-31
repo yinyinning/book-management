@@ -6,9 +6,11 @@
     const keyword = ref('')
     const pageNum = ref(1)
     const pageSize = ref(10)
+
     // 图书列表（响应式数据，初始为空数组）
     const books = ref<Book[]>([])
     const total = ref(0)
+    
     // 加载数据：调用后端接口，把结果存进 books
     async function load() {
         const result = await searchBooks(keyword.value, pageNum.value, pageSize.value)

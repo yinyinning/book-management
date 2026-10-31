@@ -23,7 +23,7 @@ public class BookController {
         this.bookService = bookService;
     }
 
-    /** 按 id 查询单本书:GET /api/book/1 */
+    /** 按 id 查询单本书:GET /api/book/{id} */
     @GetMapping("/{id}")
     public Result<BookResponse> getById(@PathVariable Long id) {
         return Result.success(bookService.getBookById(id));

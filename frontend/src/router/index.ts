@@ -31,6 +31,11 @@ const router= createRouter({
                     component: () => import('@/views/BookView.vue'),
                 },
                 {
+                    path: 'book/:id',
+                    name: 'BookDetail',
+                    component: () => import('@/views/BookDetailView.vue'),
+                },
+                {
                     path: 'borrow',
                     name: 'Borrow',
                     component: () => import('@/views/BorrowView.vue'),
@@ -84,7 +89,7 @@ const router= createRouter({
                     path: 'announcement',
                     name: 'Announcement',
                     component: () => import('@/views/AnnounceManage.vue')
-                 }
+                },
             ]
         },
         {

@@ -6,6 +6,11 @@ export function listBookCopies(): Promise<BookCopy[]>{
   return request.get('/book-copy/list') as any
 }
 
+//根据图书ID查询副本列表： GET /api/book-copy/book/{bookId}
+export function listByBookId(bookId: number): Promise<BookCopy[]> {
+  return request.get(`/book-copy/book/${bookId}`)
+}
+
 // 新增图书副本：POST /api/book-copy
 export function addBookCopy(data: Omit<BookCopy, 'id' | 'status'>): Promise<boolean> {
   return request.post('/book-copy', data) as any

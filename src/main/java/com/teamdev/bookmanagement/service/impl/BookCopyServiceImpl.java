@@ -16,6 +16,7 @@ import com.teamdev.bookmanagement.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -67,5 +68,10 @@ public class BookCopyServiceImpl extends ServiceImpl<BookCopyMapper, BookCopy> i
         boolean success=removeById(id);
         log.info("管理员[{}]删除副本id为[{}]的书《{}》(ISBN:{})的副本(BARCODE:{}){}",StpUtil.getLoginIdAsLong(),id,book.getTitle(),book.getIsbn(),bookCopy.getBarcode(),success?"成功":"失败");
         return success;
+    }
+
+    @Override
+    public List<BookCopy> getByBookId(Long bookId){
+        return lambdaQuery().eq(BookCopy::getBookId,bookId).list();
     }
 }

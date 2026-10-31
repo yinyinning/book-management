@@ -25,7 +25,7 @@ public class BookTypeController {
     /** GET /api/book-type/list 查全部分类 */
     @GetMapping("/list")
     public Result<List<BookType>> getAllBookType(){
-        return Result.success(bookTypeService.list());
+        return Result.success(bookTypeService.lambdaQuery().orderByAsc(BookType::getId).list());
     }
 
     /** GET /api/book-type/{typeId}/books 查该分类下的所有书 */

@@ -1,6 +1,11 @@
 import request from './request'
 import type{ Book,BookType,PageResult } from '@/models/book'
 
+//按ID查询图书： GET /api/book/{id}
+export function getById(id: number): Promise<Book> {
+  return request.get(`/book/${id}`)
+}
+
 //查询全部图书： GET /api/book/list
 export function listBooks(): Promise<Book[]>{
   return request.get('/book/list') as any

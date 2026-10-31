@@ -1,5 +1,5 @@
 <template>
-    <div class="book-cover" :style="{ background: coverBgColor(book.id) }">
+    <div @click="goDetail" class="book-cover" :style="{ background: coverBgColor(book.id) }">
         <div class="title">{{ book.title }}</div>
         <div class="author">{{ book.author }}</div>
     </div>
@@ -7,11 +7,17 @@
 
 <script lang="ts" setup>
 import type { Book } from '@/models/book';
+import { useRouter } from 'vue-router';
 
-defineProps<{book: Book}>()
+const props=defineProps<{book: Book}>()
+const router=useRouter()
+
 function coverBgColor(id: number): string {
     const colors = ['#5B8DEF', '#E85D75', '#3FB68B', '#F2A65A', '#8E6DD8', '#4ECDC4']
     return colors[(id)%colors.length]
+}
+function goDetail(){
+    router.push(`/book/${props.book.id}`)
 }
 </script>
 
@@ -22,6 +28,7 @@ function coverBgColor(id: number): string {
     padding: 10px;
     border-radius: 5px;
     text-align: center;
+    cursor: pointer;
 }
 .book-cover .title {
     white-space: nowrap;
