@@ -6,12 +6,15 @@ CREATE TABLE `user` (
 `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '用户ID',
 `username` VARCHAR(50) NOT NULL COMMENT '用户名',
 `password` VARCHAR(100) NOT NULL COMMENT '密码（加密存储）',
-`role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0=普通用户，1=管理员',
+`role` TINYINT NOT NULL DEFAULT 0 COMMENT '角色：0=普通用户，1=管理员，2=超级管理员',
 `status` TINYINT NOT NULL DEFAULT 1 COMMENT '状态：1=正常，0=禁用',
 `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+`email` VARCHAR(100) DEFAULT NULL COMMENT '用户绑定邮箱',
+`avatar` VARCHAR(255) DEFAULT NULL COMMENT '用户上传的头像',
 PRIMARY KEY (`id`),
-UNIQUE KEY `uk_username` (`username`)
+UNIQUE KEY `uk_username` (`username`),
+UNIQUE KEY `uk_email` (`email`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '用户表';
 
 DROP TABLE IF EXISTS `book`;
@@ -73,8 +76,21 @@ CREATE TABLE `announcement` (
 `id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '通告ID',
 `title` VARCHAR(100) NOT NULL COMMENT '标题',
 `content` TEXT NOT NULL COMMENT '内容',
+`type` TINYINT NOT NULL DEFAULT 0 COMMENT '通告类型：0=公告,1=申诉',
 `publisher_id` BIGINT NOT NULL COMMENT '发布人ID',
 `publish_time` DATETIME NOT NULL COMMENT '发布时间',
 PRIMARY KEY (`id`),
 KEY idx_publisher_id (`publisher_id`)
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='通告表';
+
+DROP TABLE IF EXISTS `super_admin_transfer`;
+CREATE TABLE `super_admin_transfer`(
+`id` BIGINT NOT NULL AUTO_INCREMENT COMMENT '转让记录ID',
+`from_user_id` BIGINT NOT NULL COMMENT '发起转让的超级管理员ID',
+`to_user_id` BIGINT NOT NULL COMMENT '被提拔的用户ID',
+`status` TINYINT NOT NULL DEFAULT 0 COMMENT '0=待生效，1=已生效，2=已取消',
+`expire_time` DATETIME NOT NULL COMMENT '生效时间',
+`create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '发起时间',
+PRIMARY KEY (`id`),
+KEY idx_status (`status`)
+)ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='超级管理员转让表';

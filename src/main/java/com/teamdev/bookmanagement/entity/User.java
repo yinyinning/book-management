@@ -3,6 +3,7 @@ package com.teamdev.bookmanagement.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
  * 用户实体,对应数据库表 user
  */
 @Data
+@Builder
 @TableName("user")
 public class User {
 
@@ -24,7 +26,7 @@ public class User {
     /** 密码(加密存储) */
     private String password;
 
-    /** 角色:0=普通用户,1=管理员 */
+    /** 角色:0=普通用户,1=管理员,2=超级管理员 */
     private Integer role;
 
     /** 状态:1=正常,0=禁用 */
@@ -35,6 +37,11 @@ public class User {
      * 所以这里不手动赋值;插入/更新时 MyBatis-Plus 会忽略为 null 的字段。
      */
     private LocalDateTime createTime;
-
     private LocalDateTime updateTime;
+
+    /** 用户绑定邮箱 */
+    private String email;
+
+    /** 用户上传的头像 */
+    private String avatar;
 }

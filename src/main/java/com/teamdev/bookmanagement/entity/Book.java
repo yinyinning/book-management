@@ -3,13 +3,16 @@ package com.teamdev.bookmanagement.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 /** 书,对应数据库表 book */
 @Data
+@Builder
 @TableName("book")
 public class Book {
+
     /** 书ID,主键自增 */
     @TableId(type = IdType.AUTO)
     private Long id;

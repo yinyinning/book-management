@@ -1,0 +1,21 @@
+package com.teamdev.bookmanagement.dto.request;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class LoginRequest {
+    @NotBlank(message = "验证码标识不能为空")
+    private String captchaId;
+    @NotBlank(message = "验证码不能为空")
+    private String captchaCode;
+    @NotBlank(message = "请输入合法用户名")
+    @Size(min = 3,max = 20,message = "请输入合法用户名")
+    private String username;
+    @NotBlank(message = "请输入合法密码字符")
+    @Size(min = 6,max = 20,message = "请输入合法密码字符")
+    private String password;
+}

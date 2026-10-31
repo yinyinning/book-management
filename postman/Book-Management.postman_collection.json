@@ -1,0 +1,415 @@
+{
+  "info": {
+    "name": "Book Management API",
+    "description": "图书管理系统全部接口。\n\n鉴权说明：\n- 只有「注册」「登录」无需登录；其余全部接口都要在请求头带 `satoken: {{token}}`（Sa-Token 默认 token 名）。\n- 标「(管理员)」的接口还需要用管理员账号（role=1）登录后的 token。\n- 先跑「登录」接口，测试脚本会自动把返回的 token 写进环境变量 {{token}}。",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "用户 User",
+      "item": [
+        {
+          "name": "注册 register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"alice\",\n    \"password\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "register"]
+            }
+          }
+        },
+        {
+          "name": "登录 login（自动存 token）",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.token) {",
+                  "    pm.environment.set(\"token\", json.data.token);",
+                  "    console.log(\"已保存 token: \" + json.data.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"alice\",\n    \"password\": \"123456\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "login"]
+            }
+          }
+        },
+        {
+          "name": "退出登录 logout",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "logout"]
+            }
+          }
+        },
+        {
+          "name": "修改用户名",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"alice2\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/name",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "name"]
+            }
+          }
+        },
+        {
+          "name": "修改密码（改完会登出）",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"oldPassword\": \"123456\",\n    \"newPassword\": \"1234567\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "password"]
+            }
+          }
+        },
+        {
+          "name": "查询所有用户 (管理员)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "list"]
+            }
+          }
+        },
+        {
+          "name": "按 id 查用户 (管理员)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "1"]
+            }
+          }
+        },
+        {
+          "name": "禁用/启用用户 (管理员)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"status\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/user/2/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "2", "status"]
+            }
+          }
+        },
+        {
+          "name": "删除用户 (管理员)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/user/2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "user", "2"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "图书 Book",
+      "item": [
+        {
+          "name": "查询所有书",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book", "list"]
+            }
+          }
+        },
+        {
+          "name": "按 id 查书",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book", "1"]
+            }
+          }
+        },
+        {
+          "name": "新增书",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"isbn\": \"9787111445166\",\n    \"title\": \"算法导论\",\n    \"author\": \"Cormen\",\n    \"publisher\": \"机械工业出版社\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book"]
+            }
+          }
+        },
+        {
+          "name": "修改书",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": 1,\n    \"isbn\": \"9787111445166\",\n    \"title\": \"算法导论(第3版)\",\n    \"author\": \"Cormen\",\n    \"publisher\": \"机械工业出版社\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book"]
+            }
+          }
+        },
+        {
+          "name": "删除书",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "副本 BookCopy",
+      "item": [
+        {
+          "name": "查询所有副本",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book-copy/list",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book-copy", "list"]
+            }
+          }
+        },
+        {
+          "name": "按 id 查副本",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book-copy/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book-copy", "1"]
+            }
+          }
+        },
+        {
+          "name": "新增副本",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"bookId\": 1,\n    \"barcode\": \"BC-0001\",\n    \"status\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/book-copy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book-copy"]
+            }
+          }
+        },
+        {
+          "name": "修改副本",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"id\": 1,\n    \"bookId\": 1,\n    \"barcode\": \"BC-0001\",\n    \"status\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/book-copy",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book-copy"]
+            }
+          }
+        },
+        {
+          "name": "删除副本",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/book-copy/1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "book-copy", "1"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "借阅 Borrow",
+      "item": [
+        {
+          "name": "借书",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json", "type": "text" },
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"userId\": 1,\n    \"bookCopyId\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/borrow",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "borrow"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "其他 Misc",
+      "item": [
+        {
+          "name": "hello",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/hello",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "hello"]
+            }
+          }
+        },
+        {
+          "name": "ping",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "satoken", "value": "{{token}}", "type": "text" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/ping",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "ping"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
