@@ -27,6 +27,12 @@ public class BookCopyController {
         return Result.success(bookCopyService.getById(id));
     }
 
+    /** 按图书 id 查询所有副本:GET /api/book-copy/book/{bookId} */
+    @GetMapping("/book/{bookId}")
+    public Result<List<BookCopy>> getByBookId(@PathVariable Long bookId) {
+        return Result.success(bookCopyService.getByBookId(bookId));
+    }
+
     /** 查询所有副本:GET /api/book-copy/list */
     @GetMapping("/list")
     public Result<List<BookCopy>> list() {

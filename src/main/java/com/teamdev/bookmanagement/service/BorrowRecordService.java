@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface BorrowRecordService extends IService<BorrowRecord> {
     /** 借书：用户借走某个副本 */
-    void borrow(Long bookCopyId);
+    String borrow(Long bookCopyId);
 
     /** 还书：归还某个副本 */
     void returnBook(Long bookCopyId,BorrowRecord borrowRecord);
@@ -20,5 +20,7 @@ public interface BorrowRecordService extends IService<BorrowRecord> {
 
     List<BorrowRecordResponse> listMyRecord();
     List<BorrowRecordResponse> listAllRecord();
+    List<Long> listBorrowBookIds();
+    Long countBorrowing();
 }
 

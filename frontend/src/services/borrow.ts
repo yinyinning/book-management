@@ -2,7 +2,7 @@ import request from './request'
 import type{ BorrowRecord  } from '@/models/borrow'
 
 // 借书：POST /api/borrow，body 传 {bookCopyId}
-export function borrow(bookCopyId:number): Promise<void>{
+export function borrow(bookCopyId:number): Promise<string> {
   return request.post('/borrow',{ bookCopyId }) as any
 }
 
@@ -19,6 +19,16 @@ export function helpReturn(bookCopyId:number): Promise<void> {
 // 查询我的借阅记录：GET /api/borrow/my
 export function listMyRecord(): Promise<BorrowRecord[]> {
   return request.get('/borrow/my') as any
+}
+
+// 查询我的借阅中的图书ID列表： GET /api/borrow/my/bookIds
+export function listMyBookId(): Promise<number[]> {
+  return request.get('/borrow/my/bookIds')
+}
+
+//查询我借阅中的副本数量： GET /api/borrow/my/borrowing/count
+export function countMyBorrowing(): Promise<number> {
+  return request.get('/borrow/my/borrowing/count')
 }
 
 // 管理员查询某用户借阅记录：GET /api/borrow/{id}

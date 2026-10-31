@@ -31,6 +31,11 @@ const router= createRouter({
                     component: () => import('@/views/BookView.vue'),
                 },
                 {
+                    path: 'book/:id',
+                    name: 'BookDetail',
+                    component: () => import('@/views/BookDetailView.vue'),
+                },
+                {
                     path: 'borrow',
                     name: 'Borrow',
                     component: () => import('@/views/BorrowView.vue'),
@@ -80,22 +85,12 @@ const router= createRouter({
                     name: 'BookTypeManage',
                     component: () => import('@/views/BookTypeManageView.vue'),
                 },
+                {
                     path: 'announcement',
                     name: 'Announcement',
                     component: () => import('@/views/AnnounceManage.vue')
-                 }
+                },
             ]
-        },
-        
-                 {
-      path: '/book',
-      name: 'BookManage',
-      component: () => import('@/views/BookManage.vue'),
-        },
-        {
-      path: '/book-copy',
-      name: 'BookCopyManage',
-      component: () => import('@/views/BookCopyManage.vue'),
         },
         {
             path: '/login',

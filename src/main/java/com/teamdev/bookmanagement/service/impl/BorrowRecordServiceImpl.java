@@ -41,7 +41,7 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void borrow(Long bookCopyId) {
+    public String borrow(Long bookCopyId) {
         // 1. 查副本，不存在就报错
         BookCopy copy = bookCopyService.getById(bookCopyId);
         if (copy == null) {
@@ -53,7 +53,12 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
             throw new BusinessException(400, "该副本当前不可借（已借出或损坏）");
         }
 
-        // 3. 生成借阅记录
+        // 3. 检查用户正在借阅副本数，超过8则不可借
+        if(countBorrowing()>=8){
+            throw new BusinessException(400, "超出可借书上限（8）");
+        }
+
+        // 4. 生成借阅记录
         Long userId= StpUtil.getLoginIdAsLong();
         BorrowRecord record = new BorrowRecord();
         record.setUserId(userId);
@@ -63,11 +68,17 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
         record.setStatus(0);
         this.save(record);
 
-        // 4. 副本状态改成借出(1)
+        // 5. 副本状态改成借出(1)
         copy.setStatus(1);
         bookCopyService.updateById(copy);
         User user=userService.getOptById(userId).orElseThrow(()->new BusinessException(404,"借书操作的用户不存在"));
         log.info("用户{}借副本{}成功",user.getUsername(),copy.getBarcode());
+        return copy.getBarcode();
+    }
+
+    @Override
+    public Long countBorrowing(){
+        return lambdaQuery().eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong()).eq(BorrowRecord::getStatus,0).count();
     }
 
     @Override
@@ -119,6 +130,15 @@ public class BorrowRecordServiceImpl extends ServiceImpl<BorrowRecordMapper, Bor
     public List<BorrowRecordResponse> listMyRecord(){
         Long id=StpUtil.getLoginIdAsLong();
         return listUserRecord(id);
+    }
+
+    @Override
+    public List<Long> listBorrowBookIds(){
+        Set<Long> borrowBookCopyIdSet=lambdaQuery().eq(BorrowRecord::getUserId,StpUtil.getLoginIdAsLong()).eq(BorrowRecord::getStatus,0).list().stream().map(BorrowRecord::getBookCopyId).collect(Collectors.toSet());
+        if(borrowBookCopyIdSet.isEmpty()){
+            return List.of();
+        }
+        return bookCopyService.lambdaQuery().in(BookCopy::getId,borrowBookCopyIdSet).list().stream().map(BookCopy::getBookId).collect(Collectors.toSet()).stream().toList();
     }
 
     @Override
