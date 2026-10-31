@@ -69,18 +69,33 @@ async function handleCommand(command: string) {
 
 <style scoped>
 .header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: bold;
-  font-size: 18px;
-}
-.el-menu {
-  flex: 1;
-}
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #304156;                    /* 深蓝灰背景 */
+    color: #fff;                            /* 文字白色 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: bold;
+    font-size: 18px;
+    color: #fff;                            /* logo 白字,图标也会跟着变白 */
+  }
+  .el-menu {
+    flex: 1;
+    background: transparent;                /* 菜单透明,透出深色底 */
+    border-bottom: none;                    /* 去掉菜单底部边框 */
+  }
+  .el-menu :deep(.el-menu-item),
+  .el-menu :deep(.el-sub-menu__title) {
+    color: #dbe6f0;                         /* 菜单项/子菜单标题:浅灰白 */
+  }
+  .el-menu :deep(.el-menu-item:hover),
+  .el-menu :deep(.el-sub-menu__title:hover),
+  .el-menu :deep(.el-menu-item.is-active) {
+    color: #fff;                            /* 悬停和当前项:纯白 */
+  }
 </style>
