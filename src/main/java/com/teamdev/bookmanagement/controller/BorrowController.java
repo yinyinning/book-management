@@ -74,6 +74,7 @@ public class BorrowController {
     public Result<List<BorrowRecordResponse>> listAllRecord(){
         return Result.success(borrowRecordService.listAllRecord());
     }
+
     /** 查询所有借阅次数 GET /api/borrow/stats*/
     @SaCheckRole("admin")
     @GetMapping("/stats")

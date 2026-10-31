@@ -7,7 +7,7 @@
         <div class="content">
             <p v-if="activeType===0">请选择左侧分类</p>
             <p v-else-if="bookList.length===0">该分类暂无图书</p>
-            <BookCoverCard v-for="b in bookList" :key="b.id" :book="b" />
+            <book-cover-card v-for="b in bookList" :key="b.id" :book="b" />
         </div>
     </div>
 </template>
@@ -16,6 +16,7 @@
 import type { Book, BookType } from '@/models/book';
 import { getAllTypes, getBooksByType } from '@/services/book';
 import { onMounted, ref } from 'vue';
+import BookCoverCard from '@/components/BookCoverCard.vue';
 
 const typeList=ref<BookType[]>([])
 const bookList=ref<Book[]>([])
@@ -38,11 +39,13 @@ onMounted(()=>{
 <style scoped>
 .category-container {
     display: flex;
+    gap:20px;
 }
 .categories {
     width: 180px;
     display: flex;
     flex-direction: column;
+    gap: 10px;
 }
 .content {
     flex: 1;

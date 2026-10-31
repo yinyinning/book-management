@@ -3,6 +3,8 @@
     import { ElMessage,ElMessageBox } from 'element-plus'
     import { listBooks, addBook,updateBook,deleteBook, getAllTypes, addBookTypes, resetBookTypes } from '@/services/book'
     import { type BookType, type Book } from '@/models/book'
+    import { Plus } from '@element-plus/icons-vue'
+    import { addBookCopy } from '@/services/bookCopy'
 
     // 图书列表（响应式数据，初始为空数组）
     const books = ref<Book[]>([])
@@ -29,9 +31,11 @@
 
     const typeDialogVisible=ref(false)
     const resetTypeDialogVisible=ref(false)
+    const addCopyDialogVisible=ref(false)
     const allTypes=ref<BookType[]>([])
     const selectedTypeIds=ref<number[]>([])
     const currentBook=ref<Book | null>(null)
+    const barcode=ref('')
 
     // 打开新增对话框：先清空表单，再显示
     function openAdd() {
@@ -63,6 +67,12 @@
       resetTypeDialogVisible.value=true
     }
 
+    function openAddCopy(book: Book) {
+      barcode.value=''
+      currentBook.value=book
+      addCopyDialogVisible.value=true
+    }
+
     async function submitAddTypes() {
       if(!currentBook.value || selectedTypeIds.value.length===0){
         return
@@ -79,6 +89,13 @@
       await resetBookTypes(currentBook.value.id,selectedTypeIds.value)
       ElMessage.success('重置分类成功')
       resetTypeDialogVisible.value=false
+    }
+
+    async function submitAddCopy() {
+      if(!barcode.value.trim) return
+      await addBookCopy({ bookId: currentBook.value!.id, barcode: barcode.value})
+      ElMessage.success('新增副本成功')
+      barcode.value=''
     }
 
     // 提交新增：调 addBook，成功后提示、关对话框、刷新列表
@@ -133,6 +150,7 @@
             <el-button @click="openTypeDialog(scope.row)">增加分类</el-button>
             <el-button type="primary" @click="openEdit(scope.row)">编辑</el-button>
             <el-button type="danger" @click="remove(scope.row)">删除</el-button>
+            <el-button :icon="Plus" circle title="新增副本" @click="openAddCopy(scope.row)" />
           </el-space>
         </template>
       </el-table-column>
@@ -140,7 +158,7 @@
 
     <!-- 新增对话框 -->
     <el-dialog v-model="dialogVisible" :title="editId === null ? '新增图书' : '编辑图书'" width="500px">
-      <el-form :model="form" label-width="80px">
+      <el-form :model="form" label-width="80px" v-keyboard-nav="submitAdd">
         <el-form-item label="ISBN">
           <el-input v-model="form.isbn" />
         </el-form-item>
@@ -182,6 +200,20 @@
       <template #footer>
         <el-button @click="resetTypeDialogVisible=false">取消</el-button>
         <el-button type="primary" @click="submitResetTypes">确定</el-button>
+      </template>
+    </el-dialog>
+    <el-dialog v-model="addCopyDialogVisible" title="新增副本">
+      <el-form v-keyboard-nav="submitAddCopy">
+        <el-form-item label="图书">
+          <el-input :model-value="currentBook?.title" disabled />
+        </el-form-item>
+        <el-form-item label="馆藏编码">
+          <el-input v-model="barcode" placeholder="请输入馆藏编码" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="addCopyDialogVisible=false">取消</el-button>
+        <el-button type="primary" @click="submitAddCopy">确认</el-button>
       </template>
     </el-dialog>
   </template>

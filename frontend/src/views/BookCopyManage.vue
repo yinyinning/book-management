@@ -34,6 +34,7 @@
       dialogVisible.value = true
       editId.value = book.id
     }
+    
     // 提交新增：调 addBookCopy，成功后提示、关对话框、刷新列表
     async function submitAdd() {
       if(editId.value === null){
@@ -89,7 +90,7 @@
 
     <!-- 新增对话框 -->
     <el-dialog v-model="dialogVisible" :title="editId === null ? '新增图书副本' : '编辑图书副本'" width="500px">
-      <el-form :model="form" label-width="80px">
+      <el-form :model="form" label-width="80px" v-keyboard-nav="submitAdd">
         <el-form-item label="BOOKID">
           <el-input-number v-model="form.bookId" :min="1" />
         </el-form-item>

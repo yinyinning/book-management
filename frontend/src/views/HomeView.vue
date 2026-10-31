@@ -14,7 +14,7 @@
       <p>最新公告</p>
       <p v-if="latestAnnouncementList.length===0">暂无公告</p>
       <div v-for="a in latestAnnouncementList" :key="a.id" class="announcement-item">
-          <div class="announcement-title">{{ a.title }}</div>
+          <h2 class="announcement-title">{{ a.title }}</h2>
           <div class="announcement-time">{{ a.publishTime }}</div>
           <div class="announcement-content">{{ a.content }}</div>
     </div>
@@ -41,21 +41,19 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import type { Book } from '@/models/book';
-import { listBooks } from '@/services/book';
+import { listBooks, listHotBooks } from '@/services/book';
 import { listAnnouncements } from '@/services/announcement';
 import type { Announcement } from '@/models/announcement';
 import BookCoverCard from '@/components/BookCoverCard.vue';
 import { useRouter } from 'vue-router';
 
+const limit=10
 const router=useRouter()
 const search=ref('')
 const bookList=ref<Book[]>([])
 const latestAnnouncementList=ref<Announcement[]>([])
-const newestBookList=computed(()=>bookList.value.slice(-10).reverse())
-const hotestBookList=computed(()=>{
-    //占位，现在后端图书还没有借阅次数字段，有了之后改成真的最热图书
-    return bookList.value.slice(0,10)
-})
+const newestBookList=computed(()=>bookList.value.slice(-limit).reverse())
+const hotestBookList=ref<Book[]>([])
 
 function onSearch(){
     router.push({ path: '/books', query: { keyword: search.value } })
@@ -66,6 +64,7 @@ function goCategories(){
 
 async function fetch(){
     bookList.value=await listBooks()
+    hotestBookList.value=await listHotBooks(limit)
     latestAnnouncementList.value=(await listAnnouncements(0)).slice(0,3)
 }
 

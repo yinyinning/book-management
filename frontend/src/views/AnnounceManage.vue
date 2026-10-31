@@ -70,17 +70,17 @@
       </el-table-column>
     </el-table>
     <el-dialog v-model="dialogVisible" title="发布公告">
-      <el-form :model="form">
+      <el-form :model="form" v-keyboard-nav="submitAdd">
         <el-form-item label="标题">
           <el-input v-model="form.title"/>
-</el-form-item>
-<el-form-item label="内容">
+        </el-form-item>
+        <el-form-item label="内容">
           <el-input v-model="form.content" type="textarea"/>
         </el-form-item>
       </el-form>
-      <template #footer>
-      <el-button @click="dialogVisible=false">取消</el-button>
-      <el-button type="primary" @click="submitAdd" >发布</el-button>
-      </template>
+        <template #footer>
+          <el-button @click="dialogVisible=false">取消</el-button>
+          <el-button type="primary" @click="submitAdd" >发布</el-button>
+        </template>
     </el-dialog>
   </template>
